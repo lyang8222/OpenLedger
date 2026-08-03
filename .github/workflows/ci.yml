@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  repo-checks:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain versions
+        run: |
+          swift --version
+          xcodebuild -version
+
+      # TODO(M1): Xcode 工程就绪后启用以下步骤
+      # - name: Build
+      #   run: xcodebuild -project OpenLedger.xcodeproj -scheme OpenLedger -destination 'platform=iOS Simulator,name=iPhone 17' build
+      #
+      # - name: Unit tests
+      #   run: xcodebuild -project OpenLedger.xcodeproj -scheme OpenLedger -destination 'platform=iOS Simulator,name=iPhone 17' test
