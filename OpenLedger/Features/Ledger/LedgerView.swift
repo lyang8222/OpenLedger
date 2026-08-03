@@ -9,6 +9,7 @@ struct LedgerView: View {
 
     let highlightRecordID: UUID?
     var onGoCapture: (() -> Void)?
+    @AppStorage("chart.type") private var chartTypeRaw = LedgerChartType.bar.rawValue
 
     init(
         highlightRecordID: UUID? = nil,
@@ -35,6 +36,21 @@ struct LedgerView: View {
                         )
                     } else {
                         List {
+                            if !records.isEmpty {
+                                Section {
+                                    LedgerChartView(
+                                        summaries: ChartDataBuilder().monthlySummaries(
+                                            records: records.map { $0.toCoreRecord() },
+                                            months: 6
+                                        ),
+                                        chartType: LedgerChartType(rawValue: chartTypeRaw) ?? .bar
+                                    )
+                                    .listRowBackground(Color.clear)
+                                } header: {
+                                    Text("收支概况（近 6 个月）")
+                                }
+                            }
+
                             ForEach(records) { record in
                                 row(record)
                             }

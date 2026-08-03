@@ -37,6 +37,7 @@ struct SettingsView: View {
     @AppStorage(ReminderKeys.dailyTime) private var dailyTimeMinutes = 21 * 60
     @AppStorage(ReminderKeys.weeklyWeekday) private var weeklyWeekday = 2
     @AppStorage(ReminderKeys.showAmounts) private var showAmountsInNotifications = false
+    @AppStorage("chart.type") private var chartTypeRaw = LedgerChartType.bar.rawValue
 
     var body: some View {
         NavigationStack {
@@ -91,7 +92,7 @@ struct SettingsView: View {
                     LabeledContent("网络", value: "无")
                 }
 
-                    Section("账单提醒") {
+                Section("账单提醒") {
                     Toggle("账单总结提醒", isOn: $remindersEnabled)
                         .onChange(of: remindersEnabled) { _, enabled in
                             if enabled {
@@ -145,6 +146,14 @@ struct SettingsView: View {
                     .onChange(of: showAmountsInNotifications) { _, _ in refreshReminders() }
                 }
                 .scrollContentBackground(.hidden)
+
+                Section("账单图表") {
+                    Picker("图表类型", selection: $chartTypeRaw) {
+                        ForEach(LedgerChartType.allCases) { type in
+                            Text(type.label).tag(type.rawValue)
+                        }
+                    }
+                }
             }
             .navigationTitle("设置")
             .sheet(isPresented: $showReconciliation) {
