@@ -18,6 +18,7 @@ struct CaptureView: View {
 
     private let pipeline = RecognitionPipeline()
     private let crypto = CryptoService()
+    var onSaved: ((Decimal, UUID) -> Void)?
 
     var body: some View {
         NavigationStack {
@@ -152,9 +153,12 @@ struct CaptureView: View {
             let model = try PaymentRecordModel.make(from: updated, crypto: crypto)
             modelContext.insert(model)
             try modelContext.save()
+            let amount = model.amount
+            let recordID = model.id
             draft = nil
             selectedItem = nil
             showReview = false
+            onSaved?(amount, recordID)
         } catch {
             errorMessage = "保存失败：\(error.localizedDescription)"
         }

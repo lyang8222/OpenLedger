@@ -7,6 +7,12 @@ struct LedgerView: View {
     @Query(sort: \PaymentRecordModel.createdAt, order: .reverse)
     private var records: [PaymentRecordModel]
 
+    let highlightRecordID: UUID?
+
+    init(highlightRecordID: UUID? = nil) {
+        self.highlightRecordID = highlightRecordID
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -56,7 +62,9 @@ struct LedgerView: View {
     }
 
     private func row(_ record: PaymentRecordModel) -> some View {
-        HStack(spacing: 12) {
+        let isHighlighted = record.id == highlightRecordID
+
+        return HStack(spacing: 12) {
             Image(systemName: platformIcon(record.platform))
                 .foregroundStyle(.tint)
                 .frame(width: 32)
@@ -75,6 +83,15 @@ struct LedgerView: View {
                 .font(.body.weight(.semibold))
                 .foregroundStyle(record.amount < 0 ? Color.primary : Color.green)
         }
+        .padding(.vertical, 4)
+        .background {
+            if isHighlighted {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(Color.accentColor.opacity(0.22))
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: isHighlighted)
     }
 
     private func platformIcon(_ platform: PaymentRecord.Platform) -> String {
