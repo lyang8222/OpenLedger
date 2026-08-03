@@ -181,11 +181,21 @@ struct SettingsView: View {
             .fileImporter(isPresented: $showImporter, allowedContentTypes: [.data]) { result in
                 switch result {
                 case .success(let url):
-                    importedData = try? Data(contentsOf: url)
-                    if importedData != nil {
-                        pendingAction = .restore
-                        passphrase = ""
-                    } else {
+                    let accessing = url.startAccessingSecurityScopedResource()
+                    defer {
+                        if accessing {
+                            url.stopAccessingSecurityScopedResource()
+                        }
+                    }
+                    do {
+                        importedData = try Data(contentsOf: url)
+                        if importedData != nil {
+                            pendingAction = .restore
+                            passphrase = ""
+                        } else {
+                            message = "无法读取备份文件"
+                        }
+                    } catch {
                         message = "无法读取备份文件"
                     }
                 case .failure(let error):
