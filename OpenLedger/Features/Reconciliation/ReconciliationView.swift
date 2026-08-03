@@ -16,6 +16,9 @@ struct ReconciliationView: View {
     @State private var report: ReconciliationReport?
     @State private var parsedCount = 0
     @State private var message: String?
+    @State private var pendingZipData: Data?
+    @State private var zipPassword = ""
+    @State private var showZipPassword = false
 
     private var importTypes: [UTType] {
         [.commaSeparatedText, UTType(filenameExtension: "xlsx") ?? .data, .data]
@@ -32,7 +35,7 @@ struct ReconciliationView: View {
                     ContentUnavailableView(
                         "导入平台账单",
                         systemImage: "doc.badge.arrow.up",
-                        description: Text("支持支付宝导出的 CSV 与微信支付导出的 xlsx 账单")
+                        description: Text("支持支付宝 CSV、微信 xlsx，以及两者官方导出的加密 zip")
                     )
                 }
             }
@@ -59,6 +62,23 @@ struct ReconciliationView: View {
                 }
             }
             .alert(
+                "输入解压密码",
+                isPresented: $showZipPassword
+            ) {
+                SecureField("解压密码", text: $zipPassword)
+                Button("解压导入") {
+                    if let data = pendingZipData {
+                        importZip(data: data, password: zipPassword)
+                    }
+                }
+                Button("取消", role: .cancel) {
+                    pendingZipData = nil
+                    zipPassword = ""
+                }
+            } message: {
+                Text("微信/支付宝会在公众号或站内信中下发解压密码。")
+            }
+            .alert(
                 "提示",
                 isPresented: Binding(
                     get: { message != nil },
@@ -83,6 +103,15 @@ struct ReconciliationView: View {
         isParsing = true
         do {
             let data = try Data(contentsOf: url)
+            let isZip = url.pathExtension.lowercased() == "zip"
+                || data.starts(with: Data([0x50, 0x4B, 0x03, 0x04]))
+            if isZip {
+                pendingZipData = data
+                zipPassword = ""
+                showZipPassword = true
+                isParsing = false
+                return
+            }
             let billEntries: [BillEntry]
             switch url.pathExtension.lowercased() {
             case "csv":
@@ -98,6 +127,27 @@ struct ReconciliationView: View {
             }
             parsedCount = billEntries.count
             report = recomputeReport(billEntries: billEntries)
+        } catch {
+            message = "账单解析失败：\(error.localizedDescription)"
+        }
+        isParsing = false
+    }
+
+    private func importZip(data: Data, password: String) {
+        isParsing = true
+        showZipPassword = false
+        pendingZipData = nil
+        zipPassword = ""
+        do {
+            let result = try BillZipImporter().importBill(data: data, password: password)
+            parsedCount = result.entries.count
+            report = recomputeReport(billEntries: result.entries)
+        } catch BillZipError.wrongPassword {
+            message = "解压密码错误，请核对微信/支付宝公众号下发的密码。"
+        } catch BillZipError.unsupportedEncryption {
+            message = "该压缩包使用 AES 加密，当前版本暂不支持。"
+        } catch BillZipError.noBillEntryFound {
+            message = "压缩包内没有找到 CSV/xlsx 账单文件。"
         } catch {
             message = "账单解析失败：\(error.localizedDescription)"
         }

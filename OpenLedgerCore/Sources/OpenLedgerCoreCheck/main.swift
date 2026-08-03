@@ -289,7 +289,56 @@ private func crc32(_ data: Data) -> UInt32 {
     return crc ^ 0xFFFF_FFFF
 }
 
-private func buildZip(entries: [(name: String, data: Data)]) -> Data {
+private struct ZipCryptoWriter {
+    private var key0: UInt32 = 0x12345678
+    private var key1: UInt32 = 0x23456789
+    private var key2: UInt32 = 0x34567890
+
+    init(password: String) {
+        for byte in Data(password.utf8) {
+            update(byte)
+        }
+    }
+
+    mutating func encrypt(_ data: Data) -> Data {
+        var output = Data()
+        output.reserveCapacity(data.count)
+        for byte in data {
+            let temp = (key2 & 0xFFFF) | 2
+            let keyByte = UInt8(truncatingIfNeeded: ((temp &* (temp ^ 1)) >> 8) & 0xFF)
+            let cipher = byte ^ keyByte
+            output.append(cipher)
+            update(byte)
+        }
+        return output
+    }
+
+    mutating func decrypt(_ data: Data) -> Data {
+        var output = Data()
+        output.reserveCapacity(data.count)
+        for byte in data {
+            let temp = (key2 & 0xFFFF) | 2
+            let keyByte = UInt8(truncatingIfNeeded: ((temp &* (temp ^ 1)) >> 8) & 0xFF)
+            let plain = byte ^ keyByte
+            output.append(plain)
+            update(plain)
+        }
+        return output
+    }
+
+    private mutating func update(_ byte: UInt8) {
+        key0 = crc32Update(key0, byte)
+        key1 = key1 &+ (key0 & 0xFF)
+        key1 = key1 &* 134775813 &+ 1
+        key2 = crc32Update(key2, UInt8(truncatingIfNeeded: key1 >> 24))
+    }
+
+    private func crc32Update(_ crc: UInt32, _ byte: UInt8) -> UInt32 {
+        crcTable[Int((crc ^ UInt32(byte)) & 0xFF)] ^ (crc >> 8)
+    }
+}
+
+private func buildZip(entries: [(name: String, data: Data)], password: String? = nil) -> Data {
     var localParts: [Data] = []
     var centralParts: [Data] = []
     var offset: UInt32 = 0
@@ -297,33 +346,46 @@ private func buildZip(entries: [(name: String, data: Data)]) -> Data {
     for entry in entries {
         let nameData = Data(entry.name.utf8)
         let crc = crc32(entry.data)
+        let flags: UInt16 = password == nil ? 0 : 1
+        let payload: Data
+        if let password {
+            var writer = ZipCryptoWriter(password: password)
+            var header = Data()
+            for _ in 0..<11 {
+                header.append(UInt8.random(in: 0...255))
+            }
+            header.append(UInt8(truncatingIfNeeded: crc >> 24))
+            payload = writer.encrypt(header) + writer.encrypt(entry.data)
+        } else {
+            payload = entry.data
+        }
 
         var local = Data()
         local.append(UInt32(0x04034B50).littleEndianData)
         local.append(UInt16(20).littleEndianData)   // version needed
-        local.append(UInt16(0).littleEndianData)    // flags
+        local.append(flags.littleEndianData)
         local.append(UInt16(0).littleEndianData)    // method: stored
         local.append(UInt16(0).littleEndianData)    // mod time
         local.append(UInt16(0).littleEndianData)    // mod date
         local.append(crc.littleEndianData)
-        local.append(UInt32(entry.data.count).littleEndianData)
+        local.append(UInt32(payload.count).littleEndianData)
         local.append(UInt32(entry.data.count).littleEndianData)
         local.append(UInt16(nameData.count).littleEndianData)
         local.append(UInt16(0).littleEndianData)    // extra len
         local.append(nameData)
-        local.append(entry.data)
+        local.append(payload)
         localParts.append(local)
 
         var central = Data()
         central.append(UInt32(0x02014B50).littleEndianData)
         central.append(UInt16(20).littleEndianData) // version made by
         central.append(UInt16(20).littleEndianData) // version needed
-        central.append(UInt16(0).littleEndianData)  // flags
+        central.append(flags.littleEndianData)
         central.append(UInt16(0).littleEndianData)  // method: stored
         central.append(UInt16(0).littleEndianData)  // time
         central.append(UInt16(0).littleEndianData)  // date
         central.append(crc.littleEndianData)
-        central.append(UInt32(entry.data.count).littleEndianData)
+        central.append(UInt32(payload.count).littleEndianData)
         central.append(UInt32(entry.data.count).littleEndianData)
         central.append(UInt16(nameData.count).littleEndianData)
         central.append(UInt16(0).littleEndianData)  // extra len
@@ -535,7 +597,63 @@ func testReconciliation() {
 }
 
 @MainActor
-func validateRealBills(csvPath: String, xlsxPath: String) {
+func testEncryptedZip() {
+    // ZipCrypto 自洽回环
+    var writer = ZipCryptoWriter(password: "123456")
+    let sample = Data("hello zipcrypto".utf8)
+    let encrypted = writer.encrypt(sample)
+    var reader = ZipCryptoWriter(password: "123456")
+    expect(reader.decrypt(encrypted) == sample, "ZipCrypto 自洽回环")
+
+    let shared = """
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <si><t>交易时间</t></si><si><t>交易类型</t></si><si><t>交易对方</t></si><si><t>商品</t></si>
+    <si><t>收/支</t></si><si><t>金额(元)</t></si><si><t>支付方式</t></si><si><t>当前状态</t></si>
+    <si><t>交易单号</t></si><si><t>商户单号</t></si><si><t>备注</t></si>
+    <si><t>商户消费</t></si><si><t>长春肿瘤医院</t></si><si><t>挂号支付交易378156</t></si>
+    <si><t>支出</t></si><si><t>支付成功</t></si><si><t>建设银行储蓄卡(7023)</t></si>
+    <si><t>4200003111202607259992563953</t></si><si><t>PT2080875367899734019</t></si>
+    </sst>
+    """
+    let sheet = """
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>
+    <row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c><c r="C1" t="s"><v>2</v></c><c r="D1" t="s"><v>3</v></c><c r="E1" t="s"><v>4</v></c><c r="F1" t="s"><v>5</v></c><c r="G1" t="s"><v>6</v></c><c r="H1" t="s"><v>7</v></c><c r="I1" t="s"><v>8</v></c><c r="J1" t="s"><v>9</v></c><c r="K1" t="s"><v>10</v></c></row>
+    <row r="2"><c r="A2"><v>46228.52690972222</v></c><c r="B2" t="s"><v>11</v></c><c r="C2" t="s"><v>12</v></c><c r="D2" t="s"><v>13</v></c><c r="E2" t="s"><v>14</v></c><c r="F2"><v>5</v></c><c r="G2" t="s"><v>16</v></c><c r="H2" t="s"><v>15</v></c><c r="I2" t="s"><v>17</v></c><c r="J2" t="s"><v>18</v></c></row>
+    </sheetData></worksheet>
+    """
+    let innerXLSX = buildZip(entries: [
+        ("xl/sharedStrings.xml", Data(shared.utf8)),
+        ("xl/worksheets/sheet1.xml", Data(sheet.utf8))
+    ])
+    let zip = buildZip(entries: [
+        ("微信支付账单明细.xlsx", innerXLSX)
+    ], password: "123456")
+
+    do {
+        let result = try BillZipImporter().importBill(data: zip, password: "123456")
+        expectEqual(result.platform, .wechat, "加密 zip：平台")
+        expect(result.fileName.contains("微信"), "加密 zip：文件名")
+        expectEqual(result.entries.count, 1, "加密 zip：数量")
+        expectEqual(result.entries[0].counterparty, "长春肿瘤医院", "加密 zip：商户")
+        expectEqual(result.entries[0].transactionId, "4200003111202607259992563953", "加密 zip：单号")
+    } catch {
+        expect(false, "加密 zip 解析异常：\(error)")
+    }
+
+    do {
+        _ = try BillZipImporter().importBill(data: zip, password: "000000")
+        expect(false, "错误密码应失败")
+    } catch BillZipError.wrongPassword {
+        expect(true, "错误密码被拒绝")
+    } catch {
+        expect(false, "错误密码的错误类型不对：\(error)")
+    }
+}
+
+@MainActor
+func validateRealBills(csvPath: String, xlsxPath: String, zipPath: String?) {
     print("\n===== 真实账单验证 =====")
     do {
         let csvData = try Data(contentsOf: URL(fileURLWithPath: csvPath))
@@ -570,6 +688,24 @@ func validateRealBills(csvPath: String, xlsxPath: String) {
     } catch {
         print("微信解析失败：\(error)")
     }
+
+    if let zipPath {
+        do {
+            let zipData = try Data(contentsOf: URL(fileURLWithPath: zipPath))
+            do {
+                _ = try BillZipImporter().importBill(data: zipData, password: "000000")
+                print("  用错误密码竟然成功了？")
+            } catch BillZipError.wrongPassword {
+                print("  错误密码被正确拒绝（ZipCrypto 校验通过路径）")
+            } catch BillZipError.unsupportedEncryption {
+                print("  该 zip 使用 AES 加密（暂不支持）")
+            } catch {
+                print("  zip 导入异常：\(error)")
+            }
+        } catch {
+            print("zip 读取失败：\(error)")
+        }
+    }
 }
 
 // MARK: - 执行
@@ -579,9 +715,14 @@ testCrypto()
 testArchive()
 testBillParsers()
 testReconciliation()
+testEncryptedZip()
 
 if CommandLine.arguments.count >= 3 {
-    validateRealBills(csvPath: CommandLine.arguments[1], xlsxPath: CommandLine.arguments[2])
+    validateRealBills(
+        csvPath: CommandLine.arguments[1],
+        xlsxPath: CommandLine.arguments[2],
+        zipPath: CommandLine.arguments.count >= 4 ? CommandLine.arguments[3] : nil
+    )
 }
 
 print("")

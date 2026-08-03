@@ -94,17 +94,26 @@ public struct WeChatBillParser: Sendable {
 
 // MARK: - 最小 ZIP 读取
 
-private struct ZipEntry {
+enum ZipError: Error {
+    case wrongPassword
+    case unsupportedEncryption
+    case corrupt
+}
+
+struct ZipEntry {
     let name: String
     let method: UInt16
+    let flags: UInt16
+    let crc: UInt32
+    let modTime: UInt16
     let compressedSize: UInt32
     let uncompressedSize: UInt32
     let localHeaderOffset: UInt32
 }
 
-private struct ZipArchive {
+struct ZipArchive {
     let data: Data
-    private let entries: [ZipEntry]
+    let entries: [ZipEntry]
 
     init(data: Data) throws {
         self.data = data
@@ -114,6 +123,58 @@ private struct ZipArchive {
     func entry(named name: String) -> Data? {
         guard let entry = entries.first(where: { $0.name == name }) else { return nil }
         return extract(entry)
+    }
+
+    /// 读取条目；加密条目使用 ZIP 传统加密（ZipCrypto）解密。
+    func entry(named name: String, password: String) throws -> Data {
+        guard let entry = entries.first(where: { $0.name == name }) else {
+            throw ZipError.corrupt
+        }
+
+        let encrypted = (entry.flags & 0x0001) != 0
+        guard !encrypted else {
+            guard entry.method != 99 else { throw ZipError.unsupportedEncryption }
+
+            let localOffset = Int(entry.localHeaderOffset)
+            guard localOffset + 30 <= data.count else { throw ZipError.corrupt }
+            let nameLength = Int(Self.readUInt16(data, at: localOffset + 26))
+            let extraLength = Int(Self.readUInt16(data, at: localOffset + 28))
+            let payloadStart = localOffset + 30 + nameLength + extraLength
+            let total = Int(entry.compressedSize)
+            guard payloadStart + total <= data.count, total > 12 else {
+                throw ZipError.corrupt
+            }
+
+            let header = data.subdata(in: payloadStart..<payloadStart + 12)
+            let body = data.subdata(in: payloadStart + 12..<payloadStart + total)
+
+            var crypto = ZipCrypto(password: password)
+            let decryptedHeader = crypto.decrypt(header)
+            let expectedCheck: UInt8 = (entry.flags & 0x0008) != 0
+                ? UInt8(truncatingIfNeeded: entry.modTime >> 8)
+                : UInt8(truncatingIfNeeded: entry.crc >> 24)
+            guard decryptedHeader.last == expectedCheck else {
+                throw ZipError.wrongPassword
+            }
+
+            let decrypted = crypto.decrypt(body)
+            let inflated: Data
+            if entry.method == 8 {
+                guard let value = Self.inflate(decrypted, expectedSize: Int(entry.uncompressedSize)) else {
+                    throw ZipError.corrupt
+                }
+                inflated = value
+            } else {
+                inflated = decrypted
+            }
+            guard Self.crc32(inflated) == entry.crc else {
+                throw ZipError.wrongPassword
+            }
+            return inflated
+        }
+
+        guard let value = extract(entry) else { throw ZipError.corrupt }
+        return value
     }
 
     private static func readCentralDirectory(_ data: Data) throws -> [ZipEntry] {
@@ -139,7 +200,10 @@ private struct ZipArchive {
             guard offset + 46 <= data.count else { break }
             let signature = readUInt32(data, at: offset)
             guard signature == 0x02014B50 else { break }
+            let flags = readUInt16(data, at: offset + 8)
             let method = readUInt16(data, at: offset + 10)
+            let modTime = readUInt16(data, at: offset + 12)
+            let crc = readUInt32(data, at: offset + 16)
             let compressedSize = readUInt32(data, at: offset + 20)
             let uncompressedSize = readUInt32(data, at: offset + 24)
             let nameLength = Int(readUInt16(data, at: offset + 28))
@@ -154,6 +218,9 @@ private struct ZipArchive {
             entries.append(ZipEntry(
                 name: name,
                 method: method,
+                flags: flags,
+                crc: crc,
+                modTime: modTime,
                 compressedSize: compressedSize,
                 uncompressedSize: uncompressedSize,
                 localHeaderOffset: localHeaderOffset
@@ -230,6 +297,65 @@ private struct ZipArchive {
 
     private static func readUInt32(_ data: Data, at offset: Int) -> UInt32 {
         data.subdata(in: offset..<offset + 4).withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) }
+    }
+
+    // MARK: - CRC32（ZipCrypto 与校验用）
+
+    private static let crcTable: [UInt32] = {
+        var table = [UInt32](repeating: 0, count: 256)
+        for n in 0..<256 {
+            var c = UInt32(n)
+            for _ in 0..<8 {
+                c = (c & 1) != 0 ? 0xEDB88320 ^ (c >> 1) : c >> 1
+            }
+            table[n] = c
+        }
+        return table
+    }()
+
+    static func crc32(_ data: Data) -> UInt32 {
+        var crc: UInt32 = 0xFFFF_FFFF
+        for byte in data {
+            crc = crcTable[Int((crc ^ UInt32(byte)) & 0xFF)] ^ (crc >> 8)
+        }
+        return crc ^ 0xFFFF_FFFF
+    }
+
+    static func crc32Update(_ crc: UInt32, _ byte: UInt8) -> UInt32 {
+        crcTable[Int((crc ^ UInt32(byte)) & 0xFF)] ^ (crc >> 8)
+    }
+}
+
+// MARK: - ZIP 传统加密（ZipCrypto）
+
+struct ZipCrypto {
+    private var key0: UInt32 = 0x12345678
+    private var key1: UInt32 = 0x23456789
+    private var key2: UInt32 = 0x34567890
+
+    init(password: String) {
+        for byte in Data(password.utf8) {
+            update(byte)
+        }
+    }
+
+    mutating func decrypt(_ data: Data) -> Data {
+        var output = Data()
+        output.reserveCapacity(data.count)
+        for byte in data {
+            let temp = (key2 & 0xFFFF) | 2
+            let plain = UInt8(truncatingIfNeeded: ((temp &* (temp ^ 1)) >> 8) & 0xFF) ^ byte
+            output.append(plain)
+            update(plain)
+        }
+        return output
+    }
+
+    private mutating func update(_ byte: UInt8) {
+        key0 = ZipArchive.crc32Update(key0, byte)
+        key1 = key1 &+ (key0 & 0xFF)
+        key1 = key1 &* 134775813 &+ 1
+        key2 = ZipArchive.crc32Update(key2, UInt8(truncatingIfNeeded: key1 >> 24))
     }
 }
 
