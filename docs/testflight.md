@@ -4,7 +4,7 @@
 
 ## 已完成
 
-- App 图标：1024×1024（蓝紫渐变 + 玻璃圆盘 + ¥），生成脚本见 `Scripts/generate_app_icon.swift`；
+- App 图标：1024×1024（Liquid Glass 玻璃质感：张开的手掌托住一枚透明玻璃硬币），生成脚本见 `Scripts/generate_app_icon.swift`；
 - 导出合规声明：`ITSAppUsesNonExemptEncryption = NO`（加密均为系统 API，无需额外申报）；
 - 版本号：`MARKETING_VERSION = 0.1.0`，`CURRENT_PROJECT_VERSION = 1`；
 - Bundle ID：App `com.openledger.app`，小组件 `com.openledger.app.widget`；
