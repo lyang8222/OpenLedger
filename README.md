@@ -4,7 +4,7 @@
 
 用户把微信、支付宝、云闪付、抖音等平台的支付成功截图交给 OpenLedger，App 在本机完成识别、解析、加密存储；数据默认不出设备，多端之间可通过隔空投送加密传输账本。
 
-> 当前状态：M0 概念验证完成（29 张真实截图，金额/商户/时间/状态提取率 100%、交易单号 96%），进入 M1 iOS MVP。详见 [docs/m0-summary.md](docs/m0-summary.md) 与 [智能记账App开发计划.md](智能记账App开发计划.md)。
+> 当前状态：M0 概念验证完成（29 张真实截图，金额/商户/时间/状态提取率 100%、交易单号 96%）；M1 进行中——核心库（OCR 解析 / 加密 / 备份）已可独立测试，iOS App 源码已就绪，待 Xcode 26 环境构建。详见 [docs/m0-summary.md](docs/m0-summary.md) 与 [智能记账App开发计划.md](智能记账App开发计划.md)。
 
 ## 功能
 
@@ -45,17 +45,34 @@
 
 ```
 OpenLedger/           # iOS App 源码（M1 阶段生成 Xcode 工程后填充）
+OpenLedgerCore/       # 核心库：识别、解析、加密、备份（SPM 包）
 OpenLedgerTests/      # 单元测试
 OpenLedgerUITests/    # UI 测试
+Scripts/              # M0 验证脚本（平台分类 / OCR 转储 / 字段提取）
 docs/                 # 设计文档
 .github/workflows/    # CI
 ```
 
 ## 开发环境
 
-- Xcode 26+
+- Xcode 26+（App 构建必需；当前机器仅命令行工具时，可先开发核心库）
 - iOS 26+（真机或模拟器）
 - Git + GitHub（仓库公开后启用 CI）
+
+## 构建 App
+
+1. 安装 Xcode 26（App Store 或 [Apple Developer](https://developer.apple.com/xcode/)）。
+2. 安装工程生成器：`brew install xcodegen`
+3. 生成工程：`xcodegen generate`
+4. 打开 `OpenLedger.xcodeproj` 运行。
+
+## 核心库校验（无需 Xcode）
+
+```bash
+swift run --package-path OpenLedgerCore OpenLedgerCoreCheck
+```
+
+安装 Xcode 后也可运行 `swift test --package-path OpenLedgerCore` 执行 XCTest 测试套件。
 
 ## 开发计划
 

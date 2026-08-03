@@ -4,6 +4,7 @@
 # Xcode
 DerivedData/
 build/
+OpenLedger.xcodeproj/
 *.ipa
 *.dSYM
 *.dSYM.zip

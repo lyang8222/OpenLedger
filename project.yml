@@ -1,0 +1,58 @@
+name: OpenLedger
+
+options:
+  bundleIdPrefix: com.openledger
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+
+packages:
+  OpenLedgerCore:
+    path: OpenLedgerCore
+
+targets:
+  OpenLedger:
+    type: application
+    platform: iOS
+    sources:
+      - OpenLedger
+    dependencies:
+      - package: OpenLedgerCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.openledger.app
+        INFOPLIST_FILE: OpenLedger/Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        SWIFT_VERSION: "6.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        CODE_SIGN_STYLE: Automatic
+
+  OpenLedgerTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - OpenLedgerTests
+    dependencies:
+      - target: OpenLedger
+      - package: OpenLedgerCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.openledger.app.tests
+        SWIFT_VERSION: "6.0"
+
+schemes:
+  OpenLedger:
+    build:
+      targets:
+        OpenLedger: all
+        OpenLedgerTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - OpenLedgerTests
