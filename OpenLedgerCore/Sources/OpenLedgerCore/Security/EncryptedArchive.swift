@@ -6,6 +6,7 @@ public enum ArchiveError: Error {
     case invalidFormat
     case unsupportedVersion
     case randomGenerationFailed
+    case wrongPassphrase
 }
 
 /// 加密备份包：口令派生密钥 + AES-GCM，结构为
@@ -70,12 +71,16 @@ public struct EncryptedArchive: Sendable {
         let sealedData = Data(data[data.index(data.startIndex, offsetBy: offset)...])
 
         let key = CryptoService.deriveKey(passphrase: passphrase, salt: salt)
-        let sealed = try AES.GCM.SealedBox(combined: sealedData)
-        let plain = try AES.GCM.open(sealed, using: key)
-
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(Payload.self, from: plain).records
+        do {
+            let sealed = try AES.GCM.SealedBox(combined: sealedData)
+            let plain = try AES.GCM.open(sealed, using: key)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            return try decoder.decode(Payload.self, from: plain).records
+        } catch {
+            // 口令错误、数据被篡改或解密后内容损坏，统一按"口令错误"提示
+            throw ArchiveError.wrongPassphrase
+        }
     }
 
     private static func randomBytes(_ count: Int) throws -> Data {

@@ -325,6 +325,12 @@ struct SettingsView: View {
             }
             try modelContext.save()
             message = inserted > 0 ? "已恢复 \(inserted) 条记录" : "没有需要恢复的新记录"
+        } catch ArchiveError.invalidFormat {
+            message = "不是有效的 OpenLedger 备份文件。"
+        } catch ArchiveError.unsupportedVersion {
+            message = "备份版本不兼容，请更新 App 后重试。"
+        } catch ArchiveError.wrongPassphrase {
+            message = "口令错误或备份文件已损坏，无法解密。"
         } catch {
             message = "恢复失败：\(error.localizedDescription)"
         }
