@@ -1,7 +1,7 @@
 import Foundation
 
 /// 平台导出的账单流水中的一笔记录。
-public struct BillEntry: Codable, Equatable, Sendable {
+public struct BillEntry: Codable, Equatable, Hashable, Sendable {
     public enum Platform: String, Codable, Sendable {
         case wechat
         case alipay

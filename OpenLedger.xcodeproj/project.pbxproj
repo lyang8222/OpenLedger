@@ -19,6 +19,7 @@
 		00000000000000000000020A /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000010A /* Formatters.swift */; };
 		00000000000000000000020B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000010C /* Assets.xcassets */; };
 		00000000000000000000020D /* OpenLedgerSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000010E /* OpenLedgerSmokeTests.swift */; };
+		000000000000000000000210 /* ReconciliationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000110 /* ReconciliationView.swift */; };
 		000000000000000000000703 /* OpenLedgerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000702 /* OpenLedgerCore */; };
 /* End PBXBuildFile section */
 
@@ -48,6 +49,7 @@
 		00000000000000000000010D /* OpenLedger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenLedger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		00000000000000000000010E /* OpenLedgerSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLedgerSmokeTests.swift; sourceTree = "<group>"; };
 		00000000000000000000010F /* OpenLedgerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenLedgerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000110 /* ReconciliationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReconciliationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +133,7 @@
 				000000000000000000000009 /* Capture */,
 				00000000000000000000000A /* Ledger */,
 				00000000000000000000000B /* Settings */,
+				00000000000000000000000F /* Reconciliation */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -184,6 +187,14 @@
 				00000000000000000000010C /* Assets.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000F /* Reconciliation */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000110 /* ReconciliationView.swift */,
+			);
+			path = Reconciliation;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -302,6 +313,7 @@
 				000000000000000000000208 /* MainCaptureButton.swift in Sources */,
 				000000000000000000000209 /* CameraPicker.swift in Sources */,
 				00000000000000000000020A /* Formatters.swift in Sources */,
+				000000000000000000000210 /* ReconciliationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

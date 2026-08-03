@@ -24,10 +24,19 @@ struct SettingsView: View {
     @State private var showImporter = false
     @State private var importedData: Data?
     @State private var message: String?
+    @State private var showReconciliation = false
 
     var body: some View {
         NavigationStack {
             Form {
+                Section("对账") {
+                    Button {
+                        showReconciliation = true
+                    } label: {
+                        Label("导入平台账单对账", systemImage: "checkmark.seal")
+                    }
+                }
+
                 Section("数据与隐私") {
                     Button("导出加密备份") {
                         pendingAction = .export
@@ -52,6 +61,9 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("设置")
+            .sheet(isPresented: $showReconciliation) {
+                ReconciliationView()
+            }
             .alert(
                 "输入备份口令",
                 isPresented: Binding(
