@@ -124,3 +124,44 @@ struct ReminderBanner: View {
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 }
+
+/// 截图后回前台时的导入询问横幅。
+struct ScreenshotPromptBanner: View {
+    let onImport: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "camera.viewfinder")
+                .font(.title3)
+                .foregroundStyle(.tint)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("检测到你刚截了支付截图")
+                    .font(.subheadline.weight(.semibold))
+                Text("要导入记账吗？截图仅在本机识别")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            Button("导入", action: onImport)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(.white.opacity(0.25), lineWidth: 1)
+        }
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+    }
+}

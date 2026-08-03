@@ -16,8 +16,38 @@ enum HomeReminderStore {
     }
 }
 
+enum ScreenshotPromptService {
+    private enum Keys {
+        static let lastScreenshot = "screenshot.lastDate"
+        static let dismissedScreenshot = "screenshot.dismissedDate"
+    }
+
+    static func recordScreenshot() {
+        UserDefaults.standard.set(Date(), forKey: Keys.lastScreenshot)
+    }
+
+    static func shouldPrompt() -> Bool {
+        let defaults = UserDefaults.standard
+        guard let last = defaults.object(forKey: Keys.lastScreenshot) as? Date else {
+            return false
+        }
+        let dismissed = defaults.object(forKey: Keys.dismissedScreenshot) as? Date ?? .distantPast
+        guard last > dismissed else { return false }
+        // 只在截图发生在 60 秒内时提示，避免陈旧时间戳打扰
+        return Date().timeIntervalSince(last) < 60
+    }
+
+    static func dismiss() {
+        let defaults = UserDefaults.standard
+        if let last = defaults.object(forKey: Keys.lastScreenshot) as? Date {
+            defaults.set(last, forKey: Keys.dismissedScreenshot)
+        }
+    }
+}
+
 struct CaptureView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var showSourceMenu = false
     @State private var showPhotoPicker = false
@@ -30,6 +60,7 @@ struct CaptureView: View {
     @State private var lastImage: UIImage?
     @State private var showMissingBanner = true
     @State private var showReconciliation = false
+    @State private var showScreenshotPrompt = false
 
     private let pipeline = RecognitionPipeline()
     private let crypto = CryptoService()
@@ -58,6 +89,26 @@ struct CaptureView: View {
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
+
+                        if showScreenshotPrompt {
+                            ScreenshotPromptBanner(
+                                onImport: {
+                                    ScreenshotPromptService.dismiss()
+                                    withAnimation(.easeOut(duration: 0.25)) {
+                                        showScreenshotPrompt = false
+                                    }
+                                    showPhotoPicker = true
+                                },
+                                onDismiss: {
+                                    ScreenshotPromptService.dismiss()
+                                    withAnimation(.easeOut(duration: 0.25)) {
+                                        showScreenshotPrompt = false
+                                    }
+                                }
+                            )
+                            .padding(.horizontal, 32)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
 
                         if showMissingBanner, HomeReminderStore.missingCount > 0 {
                             ReminderBanner(
@@ -113,6 +164,25 @@ struct CaptureView: View {
                 guard let newItem else { return }
                 Task {
                     await loadPhoto(newItem)
+                }
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: UIApplication.userDidTakeScreenshotNotification
+                )
+            ) { _ in
+                ScreenshotPromptService.recordScreenshot()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active, ScreenshotPromptService.shouldPrompt() {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        showScreenshotPrompt = true
+                    }
+                }
+            }
+            .task {
+                if ScreenshotPromptService.shouldPrompt() {
+                    showScreenshotPrompt = true
                 }
             }
             .sheet(isPresented: $showReview) {
