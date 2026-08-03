@@ -61,10 +61,17 @@ docs/                 # 设计文档
 
 ## 构建 App
 
-1. 安装 Xcode 26（App Store 或 [Apple Developer](https://developer.apple.com/xcode/)）。
-2. 安装工程生成器：`brew install xcodegen`
-3. 生成工程：`xcodegen generate`
-4. 打开 `OpenLedger.xcodeproj` 运行。
+1. 安装 Xcode（当前使用 Xcode 27 beta；正式版 Xcode 26 亦可）。
+2. 打开 `OpenLedger.xcodeproj`，选择 `OpenLedger` scheme 运行到模拟器。
+3. 首次运行需在 Xcode 的 Settings → Components 中下载 iOS Simulator 运行时。
+4. 命令行构建：
+
+```bash
+xcodebuild -project OpenLedger.xcodeproj -scheme OpenLedger \
+  -destination 'generic/platform=iOS Simulator' build
+```
+
+> `project.yml`（XcodeGen 配置）保留作为工程生成的备选方案；当前仓库直接维护 `OpenLedger.xcodeproj`。
 
 ## 核心库校验（无需 Xcode）
 

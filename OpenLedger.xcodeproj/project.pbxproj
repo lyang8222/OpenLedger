@@ -1,0 +1,486 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000000000000000000000201 /* OpenLedgerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000101 /* OpenLedgerApp.swift */; };
+		000000000000000000000202 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000102 /* RootView.swift */; };
+		000000000000000000000203 /* PaymentRecordModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000103 /* PaymentRecordModel.swift */; };
+		000000000000000000000204 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000104 /* CaptureView.swift */; };
+		000000000000000000000205 /* RecognitionReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000105 /* RecognitionReviewView.swift */; };
+		000000000000000000000206 /* LedgerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000106 /* LedgerView.swift */; };
+		000000000000000000000207 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000107 /* SettingsView.swift */; };
+		000000000000000000000208 /* MainCaptureButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000108 /* MainCaptureButton.swift */; };
+		000000000000000000000209 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000109 /* CameraPicker.swift */; };
+		00000000000000000000020A /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000010A /* Formatters.swift */; };
+		00000000000000000000020B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000010C /* Assets.xcassets */; };
+		00000000000000000000020D /* OpenLedgerSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000010E /* OpenLedgerSmokeTests.swift */; };
+		000000000000000000000703 /* OpenLedgerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000702 /* OpenLedgerCore */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		000000000000000000000601 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000303 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000000000301;
+			remoteInfo = OpenLedger;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000101 /* OpenLedgerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLedgerApp.swift; sourceTree = "<group>"; };
+		000000000000000000000102 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		000000000000000000000103 /* PaymentRecordModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentRecordModel.swift; sourceTree = "<group>"; };
+		000000000000000000000104 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
+		000000000000000000000105 /* RecognitionReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionReviewView.swift; sourceTree = "<group>"; };
+		000000000000000000000106 /* LedgerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerView.swift; sourceTree = "<group>"; };
+		000000000000000000000107 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		000000000000000000000108 /* MainCaptureButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainCaptureButton.swift; sourceTree = "<group>"; };
+		000000000000000000000109 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
+		00000000000000000000010A /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
+		00000000000000000000010B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		00000000000000000000010C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		00000000000000000000010D /* OpenLedger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenLedger.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		00000000000000000000010E /* OpenLedgerSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLedgerSmokeTests.swift; sourceTree = "<group>"; };
+		00000000000000000000010F /* OpenLedgerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenLedgerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000000000000000000000502 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000703 /* OpenLedgerCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000505 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000004 /* OpenLedger */,
+				000000000000000000000005 /* OpenLedgerTests */,
+				000000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000010D /* OpenLedger.app */,
+				00000000000000000000010F /* OpenLedgerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		000000000000000000000004 /* OpenLedger */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000006 /* App */,
+				000000000000000000000007 /* Models */,
+				000000000000000000000008 /* Features */,
+				00000000000000000000000C /* DesignSystem */,
+				00000000000000000000000D /* Support */,
+				00000000000000000000000E /* Resources */,
+			);
+			path = OpenLedger;
+			sourceTree = "<group>";
+		};
+		000000000000000000000005 /* OpenLedgerTests */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000010E /* OpenLedgerSmokeTests.swift */,
+			);
+			path = OpenLedgerTests;
+			sourceTree = "<group>";
+		};
+		000000000000000000000006 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000101 /* OpenLedgerApp.swift */,
+				000000000000000000000102 /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		000000000000000000000007 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000103 /* PaymentRecordModel.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		000000000000000000000008 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000009 /* Capture */,
+				00000000000000000000000A /* Ledger */,
+				00000000000000000000000B /* Settings */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		000000000000000000000009 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000104 /* CaptureView.swift */,
+				000000000000000000000105 /* RecognitionReviewView.swift */,
+			);
+			path = Capture;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000A /* Ledger */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000106 /* LedgerView.swift */,
+			);
+			path = Ledger;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000B /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000107 /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000C /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000108 /* MainCaptureButton.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000D /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000109 /* CameraPicker.swift */,
+				00000000000000000000010A /* Formatters.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		00000000000000000000000E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				00000000000000000000010B /* Info.plist */,
+				00000000000000000000010C /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000000000000000000000301 /* OpenLedger */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000402 /* Build configuration list for PBXNativeTarget "OpenLedger" */;
+			buildPhases = (
+				000000000000000000000501 /* Sources */,
+				000000000000000000000502 /* Frameworks */,
+				000000000000000000000503 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = OpenLedger;
+			packageProductDependencies = (
+				000000000000000000000702 /* OpenLedgerCore */,
+			);
+			productName = OpenLedger;
+			productReference = 00000000000000000000010D /* OpenLedger.app */;
+			productType = "com.apple.product-type.application";
+		};
+		000000000000000000000302 /* OpenLedgerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000403 /* Build configuration list for PBXNativeTarget "OpenLedgerTests" */;
+			buildPhases = (
+				000000000000000000000504 /* Sources */,
+				000000000000000000000505 /* Frameworks */,
+				000000000000000000000506 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				000000000000000000000602 /* PBXTargetDependency */,
+			);
+			name = OpenLedgerTests;
+			productName = OpenLedgerTests;
+			productReference = 00000000000000000000010F /* OpenLedgerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000303 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					000000000000000000000301 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					000000000000000000000302 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 000000000000000000000301;
+					};
+				};
+			};
+			buildConfigurationList = 000000000000000000000401 /* Build configuration list for PBXProject "OpenLedger" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				"zh-Hans",
+			);
+			mainGroup = 000000000000000000000002;
+			packageReferences = (
+				000000000000000000000701 /* XCLocalSwiftPackageReference "OpenLedgerCore" */,
+			);
+			productRefGroup = 000000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000000000000000000000301 /* OpenLedger */,
+				000000000000000000000302 /* OpenLedgerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000000000000000000000503 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00000000000000000000020B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000506 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		000000000000000000000501 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000201 /* OpenLedgerApp.swift in Sources */,
+				000000000000000000000202 /* RootView.swift in Sources */,
+				000000000000000000000203 /* PaymentRecordModel.swift in Sources */,
+				000000000000000000000204 /* CaptureView.swift in Sources */,
+				000000000000000000000205 /* RecognitionReviewView.swift in Sources */,
+				000000000000000000000206 /* LedgerView.swift in Sources */,
+				000000000000000000000207 /* SettingsView.swift in Sources */,
+				000000000000000000000208 /* MainCaptureButton.swift in Sources */,
+				000000000000000000000209 /* CameraPicker.swift in Sources */,
+				00000000000000000000020A /* Formatters.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000504 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00000000000000000000020D /* OpenLedgerSmokeTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		000000000000000000000602 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000000000301 /* OpenLedger */;
+			targetProxy = 000000000000000000000601 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		000000000000000000000701 /* XCLocalSwiftPackageReference "OpenLedgerCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = OpenLedgerCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		000000000000000000000702 /* OpenLedgerCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenLedgerCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin XCBuildConfiguration section */
+		000000000000000000000411 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		000000000000000000000412 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		000000000000000000000421 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = OpenLedger/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.openledger.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		000000000000000000000422 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = OpenLedger/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.openledger.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		000000000000000000000431 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.openledger.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpenLedger.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OpenLedger";
+			};
+			name = Debug;
+		};
+		000000000000000000000432 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.openledger.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpenLedger.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OpenLedger";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		000000000000000000000401 /* Build configuration list for PBXProject "OpenLedger" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000411 /* Debug */,
+				000000000000000000000412 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000402 /* Build configuration list for PBXNativeTarget "OpenLedger" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000421 /* Debug */,
+				000000000000000000000422 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000403 /* Build configuration list for PBXNativeTarget "OpenLedgerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				000000000000000000000431 /* Debug */,
+				000000000000000000000432 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 000000000000000000000303 /* Project object */;
+}

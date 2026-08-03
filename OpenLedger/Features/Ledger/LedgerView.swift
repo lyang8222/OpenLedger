@@ -47,7 +47,7 @@ struct LedgerView: View {
 
             Text(LedgerFormatters.string(from: record.amount))
                 .font(.body.weight(.semibold))
-                .foregroundStyle(record.amount < 0 ? .primary : .green)
+                .foregroundStyle(record.amount < 0 ? Color.primary : Color.green)
         }
     }
 

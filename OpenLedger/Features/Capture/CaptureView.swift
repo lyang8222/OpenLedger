@@ -1,5 +1,6 @@
 import OpenLedgerCore
 import PhotosUI
+import SwiftData
 import SwiftUI
 import UIKit
 
