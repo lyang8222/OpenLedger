@@ -24,6 +24,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>OpenLedger 使用相机拍摄支付截图，识别后仅保存在本机。</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>OpenLedger 使用面容 ID 保护你的账单隐私。</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

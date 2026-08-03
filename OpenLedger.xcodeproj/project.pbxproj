@@ -20,6 +20,8 @@
 		00000000000000000000020B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000010C /* Assets.xcassets */; };
 		00000000000000000000020D /* OpenLedgerSmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000010E /* OpenLedgerSmokeTests.swift */; };
 		000000000000000000000210 /* ReconciliationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000110 /* ReconciliationView.swift */; };
+		000000000000000000000211 /* AppLockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000111 /* AppLockService.swift */; };
+		000000000000000000000212 /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000112 /* LockScreenView.swift */; };
 		000000000000000000000703 /* OpenLedgerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000702 /* OpenLedgerCore */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +52,8 @@
 		00000000000000000000010E /* OpenLedgerSmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLedgerSmokeTests.swift; sourceTree = "<group>"; };
 		00000000000000000000010F /* OpenLedgerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenLedgerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		000000000000000000000110 /* ReconciliationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReconciliationView.swift; sourceTree = "<group>"; };
+		000000000000000000000111 /* AppLockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockService.swift; sourceTree = "<group>"; };
+		000000000000000000000112 /* LockScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +99,7 @@
 				000000000000000000000006 /* App */,
 				000000000000000000000007 /* Models */,
 				000000000000000000000008 /* Features */,
+				000000000000000000000010 /* Services */,
 				00000000000000000000000C /* DesignSystem */,
 				00000000000000000000000D /* Support */,
 				00000000000000000000000E /* Resources */,
@@ -133,6 +138,7 @@
 				000000000000000000000009 /* Capture */,
 				00000000000000000000000A /* Ledger */,
 				00000000000000000000000B /* Settings */,
+				000000000000000000000011 /* Security */,
 				00000000000000000000000F /* Reconciliation */,
 			);
 			path = Features;
@@ -195,6 +201,22 @@
 				000000000000000000000110 /* ReconciliationView.swift */,
 			);
 			path = Reconciliation;
+			sourceTree = "<group>";
+		};
+		000000000000000000000010 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000111 /* AppLockService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		000000000000000000000011 /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000112 /* LockScreenView.swift */,
+			);
+			path = Security;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -314,6 +336,8 @@
 				000000000000000000000209 /* CameraPicker.swift in Sources */,
 				00000000000000000000020A /* Formatters.swift in Sources */,
 				000000000000000000000210 /* ReconciliationView.swift in Sources */,
+				000000000000000000000211 /* AppLockService.swift in Sources */,
+				000000000000000000000212 /* LockScreenView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

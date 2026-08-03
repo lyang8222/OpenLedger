@@ -26,9 +26,33 @@ struct SettingsView: View {
     @State private var message: String?
     @State private var showReconciliation = false
 
+    let appLock: AppLockService
+
     var body: some View {
         NavigationStack {
             Form {
+                Section("隐私保护") {
+                    Toggle(
+                        "面容 / 触控 ID 解锁",
+                        isOn: Binding(
+                            get: { appLock.isEnabled },
+                            set: { appLock.isEnabled = $0 }
+                        )
+                    )
+
+                    if appLock.canUseBiometrics {
+                        LabeledContent("生物识别", value: biometricName)
+                    } else {
+                        Text("当前设备未设置面容/触控 ID，请先在系统设置中开启。")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Text("开启后，App 进入后台会立即锁定；切换器预览将显示锁定遮罩。")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
                 Section("对账") {
                     Button {
                         showReconciliation = true
@@ -128,6 +152,17 @@ struct SettingsView: View {
             exportBackup()
         case .restore:
             restoreBackup()
+        }
+    }
+
+    private var biometricName: String {
+        switch appLock.biometricType {
+        case .faceID:
+            "面容 ID"
+        case .touchID:
+            "触控 ID"
+        default:
+            "不可用"
         }
     }
 
