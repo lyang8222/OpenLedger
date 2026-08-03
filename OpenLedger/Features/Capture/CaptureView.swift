@@ -4,6 +4,18 @@ import SwiftData
 import SwiftUI
 import UIKit
 
+enum HomeReminderStore {
+    private static let countKey = "home.missingCount"
+
+    static var missingCount: Int {
+        UserDefaults.standard.integer(forKey: countKey)
+    }
+
+    static func setMissingCount(_ count: Int) {
+        UserDefaults.standard.set(count, forKey: countKey)
+    }
+}
+
 struct CaptureView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -16,6 +28,8 @@ struct CaptureView: View {
     @State private var draft: PaymentDraft?
     @State private var errorMessage: String?
     @State private var lastImage: UIImage?
+    @State private var showMissingBanner = true
+    @State private var showReconciliation = false
 
     private let pipeline = RecognitionPipeline()
     private let crypto = CryptoService()
@@ -44,6 +58,22 @@ struct CaptureView: View {
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
+
+                        if showMissingBanner, HomeReminderStore.missingCount > 0 {
+                            ReminderBanner(
+                                count: HomeReminderStore.missingCount,
+                                onAction: {
+                                    showReconciliation = true
+                                },
+                                onDismiss: {
+                                    withAnimation(.easeOut(duration: 0.25)) {
+                                        showMissingBanner = false
+                                    }
+                                }
+                            )
+                            .padding(.horizontal, 32)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
 
                         if let errorMessage {
                             InlineErrorCard(
@@ -91,6 +121,9 @@ struct CaptureView: View {
                         save(updated)
                     }
                 }
+            }
+            .sheet(isPresented: $showReconciliation) {
+                ReconciliationView()
             }
             .overlay {
                 if isProcessing {

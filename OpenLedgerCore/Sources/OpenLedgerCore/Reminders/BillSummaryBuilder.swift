@@ -84,6 +84,22 @@ public struct BillSummaryBuilder: Sendable {
         return "\(period.label)新增 \(expenses.count) 笔支出，点开查看详情"
     }
 
+    /// 返回周期内支出统计（笔数与金额绝对值），供小组件等使用。
+    public func stats(
+        records: [PaymentRecord],
+        period: SummaryPeriod,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> (count: Int, amount: Decimal) {
+        let range = self.range(for: period, now: now, calendar: calendar)
+        let expenses = records.filter { record in
+            guard let paidAt = record.paidAt, record.amount < 0 else { return false }
+            return paidAt >= range.start && paidAt < range.end
+        }
+        let total = expenses.reduce(Decimal.zero) { $0 + abs($1.amount) }
+        return (expenses.count, total)
+    }
+
     private static func amountText(_ amount: Decimal) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal

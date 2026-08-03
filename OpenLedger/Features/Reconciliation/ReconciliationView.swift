@@ -131,6 +131,9 @@ struct ReconciliationView: View {
             }
             parsedCount = billEntries.count
             report = recomputeReport(billEntries: billEntries)
+            if let report {
+                HomeReminderStore.setMissingCount(report.missingInApp.count)
+            }
         } catch {
             message = "账单解析失败：\(error.localizedDescription)"
         }
@@ -298,6 +301,7 @@ struct ReconciliationView: View {
                     billEntries: billEntries(from: report),
                     models: records + newModels
                 )
+                HomeReminderStore.setMissingCount(self.report?.missingInApp.count ?? 0)
             }
             message = inserted > 0
                 ? "已补记 \(inserted) 笔" + (skipped > 0 ? "，跳过重复 \(skipped) 笔" : "")

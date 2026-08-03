@@ -687,6 +687,10 @@ func testBillSummaryBuilder() {
         calendar: calendar
     )
     expect(empty.contains("暂无支出"), "每日总结：无记录文案")
+
+    let stats = builder.stats(records: records, period: .daily, now: now, calendar: calendar)
+    expectEqual(stats.count, 2, "统计接口：笔数")
+    expectEqual(stats.amount, Decimal(string: "15.50"), "统计接口：金额")
 }
 
 @MainActor

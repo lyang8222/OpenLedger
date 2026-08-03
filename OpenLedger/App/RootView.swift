@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import WidgetKit
 
 struct RootView: View {
     private enum AppTab: String, Hashable {
@@ -62,10 +63,14 @@ struct RootView: View {
                 appLock.lockIfEnabled()
             }
             await ReminderService.refreshSummaries(records: records)
+            WidgetSummarySnapshot.update(records: records.map { $0.toCoreRecord() })
+            WidgetCenter.shared.reloadAllTimelines()
         }
         .onChange(of: records.count) { _, _ in
             Task {
                 await ReminderService.refreshSummaries(records: records)
+                WidgetSummarySnapshot.update(records: records.map { $0.toCoreRecord() })
+                WidgetCenter.shared.reloadAllTimelines()
             }
         }
     }

@@ -83,3 +83,44 @@ struct InlineErrorCard: View {
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
     }
 }
+
+/// 首页漏记提醒横幅。
+struct ReminderBanner: View {
+    let count: Int
+    let onAction: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.circle.fill")
+                .foregroundStyle(.yellow)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("平台账单中有 \(count) 笔未记账")
+                    .font(.subheadline.weight(.semibold))
+                Text("导入账单对账后，可一键补记")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            Button("去处理", action: onAction)
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(.white.opacity(0.25), lineWidth: 1)
+        }
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+    }
+}
