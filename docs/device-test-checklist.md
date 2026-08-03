@@ -8,6 +8,20 @@
 - [ ] Apple ID 已在 Xcode 登录（Xcode → Settings → Accounts）
 - [ ] App Store Connect 已创建 App 记录，Bundle ID：`com.openledger.app`
 
+### 0.1 免费账号能做什么（不付费方案）
+
+- **真机自测：可以**。用普通 Apple ID（免费的个人团队），Xcode 自动签名，就能在自己的 iPhone 上运行和调试 OpenLedger；
+- **TestFlight：不可以**。TestFlight 属于 App Store Connect，官方要求付费的 Apple Developer Program 会员；
+- **分发给别人：不可以（官方途径）**。免费账号不能生成 Ad Hoc 包给别人安装，只能在自己已注册的设备上运行；
+- **小组件 / App Groups：可能受限**。免费签名对部分能力有限制，若 Xcode 在启用 App Groups 时报错，说明该能力需要付费会员；这时小组件共享数据无法在真机验证。
+
+免费路径的替代方案（门槛较高，适合以后评估）：
+
+- **开源自建**：测试者用 Xcode 打开仓库、用自己的 Apple ID 签名安装（免费，但要求测试者会 Xcode）；
+- **AltStore 侧载**：免费，但每 7 天需重新签名，体验繁琐。
+
+结论：想先"自己真机跑一遍"，免费即可；想把版本发给别人内测，TestFlight 没有免费替代，需 $99/年。
+
 ## 1. 签名与真机运行
 
 1. 打开 `OpenLedger.xcodeproj`；
