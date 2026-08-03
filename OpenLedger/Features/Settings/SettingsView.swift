@@ -81,8 +81,7 @@ struct SettingsView: View {
                         passphrase = ""
                     }
                     Button("恢复备份") {
-                        pendingAction = .restore
-                        passphrase = ""
+                        showImporter = true
                     }
                 }
 
@@ -297,7 +296,10 @@ struct SettingsView: View {
     }
 
     private func restoreBackup() {
-        guard let data = importedData else { return }
+        guard let data = importedData else {
+            message = "请先选择备份文件"
+            return
+        }
         do {
             let restored = try archive.importArchive(data: data, passphrase: passphrase)
             let key = try crypto.masterKey()
