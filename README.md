@@ -2,6 +2,8 @@
 
 本地优先的智能记账 App：一张支付截图，自动完成记账。
 
+[![CI](https://github.com/lyang8222/OpenLedger/actions/workflows/ci.yml/badge.svg)](https://github.com/lyang8222/OpenLedger/actions/workflows/ci.yml)
+
 用户把微信、支付宝、云闪付、抖音等平台的支付成功截图交给 OpenLedger，App 在本机完成识别、解析、加密存储；数据默认不出设备，多端之间可通过隔空投送加密传输账本。
 
 > 当前状态：M0 概念验证完成（57 张四平台真实截图，金额/商户/时间/状态提取率 100%、交易单号 98%）；M1 进行中——核心库（OCR 解析 / 加密 / 备份）已可独立测试，iOS App 源码已就绪，待 Xcode 26 环境构建。详见 [docs/m0-summary.md](docs/m0-summary.md) 与 [智能记账App开发计划.md](智能记账App开发计划.md)。
