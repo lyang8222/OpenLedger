@@ -653,6 +653,43 @@ func testEncryptedZip() {
 }
 
 @MainActor
+func testBillSummaryBuilder() {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+    let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 4, hour: 12))!
+
+    let records = [
+        PaymentRecord(amount: Decimal(string: "-10.50")!, paidAt: now.addingTimeInterval(-3600)),
+        PaymentRecord(amount: Decimal(string: "-5.00")!, paidAt: now.addingTimeInterval(-7200)),
+        PaymentRecord(amount: Decimal(string: "-100.00")!, paidAt: calendar.date(byAdding: .day, value: -3, to: now)!),
+        PaymentRecord(amount: Decimal(string: "50.00")!, paidAt: now),
+        PaymentRecord(amount: Decimal(string: "-999.00")!, paidAt: calendar.date(byAdding: .month, value: -1, to: now)!)
+    ]
+    let builder = BillSummaryBuilder()
+
+    let daily = builder.summary(records: records, period: .daily, now: now, calendar: calendar)
+    expect(daily.contains("¥15.50"), "每日总结：金额正确")
+    expect(daily.contains("2 笔"), "每日总结：笔数正确")
+
+    let dailyHidden = builder.summary(
+        records: records, period: .daily, now: now, calendar: calendar, showAmounts: false
+    )
+    expect(dailyHidden.contains("新增 2 笔支出"), "每日总结：隐藏金额模式")
+    expect(!dailyHidden.contains("¥"), "每日总结：隐藏金额不含符号")
+
+    let yearly = builder.summary(records: records, period: .yearly, now: now, calendar: calendar)
+    expect(yearly.contains("4 笔"), "年度总结：统计全部支出")
+
+    let empty = builder.summary(
+        records: [PaymentRecord(amount: Decimal(string: "-9.00")!, paidAt: calendar.date(byAdding: .day, value: -10, to: now)!)],
+        period: .daily,
+        now: now,
+        calendar: calendar
+    )
+    expect(empty.contains("暂无支出"), "每日总结：无记录文案")
+}
+
+@MainActor
 func validateRealBills(csvPath: String, xlsxPath: String, zipPath: String?) {
     print("\n===== 真实账单验证 =====")
     do {
@@ -716,6 +753,7 @@ testArchive()
 testBillParsers()
 testReconciliation()
 testEncryptedZip()
+testBillSummaryBuilder()
 
 if CommandLine.arguments.count >= 3 {
     validateRealBills(

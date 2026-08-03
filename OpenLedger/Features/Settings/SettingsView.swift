@@ -28,6 +28,16 @@ struct SettingsView: View {
 
     let appLock: AppLockService
 
+    @AppStorage(ReminderKeys.enabled) private var remindersEnabled = false
+    @AppStorage(ReminderKeys.daily) private var dailyReminderEnabled = true
+    @AppStorage(ReminderKeys.weekly) private var weeklyReminderEnabled = true
+    @AppStorage(ReminderKeys.monthly) private var monthlyReminderEnabled = true
+    @AppStorage(ReminderKeys.quarterly) private var quarterlyReminderEnabled = true
+    @AppStorage(ReminderKeys.yearly) private var yearlyReminderEnabled = true
+    @AppStorage(ReminderKeys.dailyTime) private var dailyTimeMinutes = 21 * 60
+    @AppStorage(ReminderKeys.weeklyWeekday) private var weeklyWeekday = 2
+    @AppStorage(ReminderKeys.showAmounts) private var showAmountsInNotifications = false
+
     var body: some View {
         NavigationStack {
             Form {
@@ -78,11 +88,58 @@ struct SettingsView: View {
                     LabeledContent("网络", value: "无")
                 }
 
-                Section("账单提醒（V1.x）") {
-                    Text("每日 / 每周 / 每月 / 每季度 / 每年账单总结将在后续版本提供")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                Section("账单提醒") {
+                    Toggle("账单总结提醒", isOn: $remindersEnabled)
+                        .onChange(of: remindersEnabled) { _, enabled in
+                            if enabled {
+                                Task {
+                                    let granted = await ReminderService.requestAuthorization()
+                                    if granted {
+                                        await ReminderService.refreshSummaries(records: records)
+                                    } else {
+                                        remindersEnabled = false
+                                        message = "通知权限被拒绝，请在系统设置中允许 OpenLedger 通知。"
+                                    }
+                                }
+                            } else {
+                                ReminderService.cancelAll()
+                            }
+                        }
+
+                    if remindersEnabled {
+                        Toggle("每日", isOn: $dailyReminderEnabled)
+                        Toggle("每周", isOn: $weeklyReminderEnabled)
+                        Toggle("每月", isOn: $monthlyReminderEnabled)
+                        Toggle("每季度", isOn: $quarterlyReminderEnabled)
+                        Toggle("每年", isOn: $yearlyReminderEnabled)
+
+                        DatePicker(
+                            "每日提醒时间",
+                            selection: dailyTimeBinding,
+                            displayedComponents: .hourAndMinute
+                        )
+
+                        Picker("每周提醒日", selection: $weeklyWeekday) {
+                            ForEach(weekdayOptions, id: \.value) { option in
+                                Text(option.name).tag(option.value)
+                            }
+                        }
+
+                        Toggle("通知显示金额", isOn: $showAmountsInNotifications)
+
+                        Text("汇总在打开 App 或新增账单时刷新；长时间未打开可能显示最近一次的数据。")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
+                .onChange(of: dailyReminderEnabled) { _, _ in refreshReminders() }
+                .onChange(of: weeklyReminderEnabled) { _, _ in refreshReminders() }
+                .onChange(of: monthlyReminderEnabled) { _, _ in refreshReminders() }
+                .onChange(of: quarterlyReminderEnabled) { _, _ in refreshReminders() }
+                .onChange(of: yearlyReminderEnabled) { _, _ in refreshReminders() }
+                .onChange(of: dailyTimeMinutes) { _, _ in refreshReminders() }
+                .onChange(of: weeklyWeekday) { _, _ in refreshReminders() }
+                .onChange(of: showAmountsInNotifications) { _, _ in refreshReminders() }
             }
             .navigationTitle("设置")
             .sheet(isPresented: $showReconciliation) {
@@ -164,6 +221,42 @@ struct SettingsView: View {
         default:
             "不可用"
         }
+    }
+
+    private func refreshReminders() {
+        Task {
+            await ReminderService.refreshSummaries(records: records)
+        }
+    }
+
+    private var dailyTimeBinding: Binding<Date> {
+        Binding(
+            get: {
+                let minutes = dailyTimeMinutes
+                return Calendar.current.date(
+                    bySettingHour: minutes / 60,
+                    minute: minutes % 60,
+                    second: 0,
+                    of: Date()
+                ) ?? Date()
+            },
+            set: { newValue in
+                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                dailyTimeMinutes = (components.hour ?? 21) * 60 + (components.minute ?? 0)
+            }
+        )
+    }
+
+    private var weekdayOptions: [(value: Int, name: String)] {
+        [
+            (2, "周一"),
+            (3, "周二"),
+            (4, "周三"),
+            (5, "周四"),
+            (6, "周五"),
+            (7, "周六"),
+            (1, "周日")
+        ]
     }
 
     private func exportBackup() {
