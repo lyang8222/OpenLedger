@@ -1,4 +1,5 @@
 import CryptoKit
+import CoreFoundation
 import Foundation
 import OpenLedgerCore
 
@@ -252,11 +253,336 @@ func testArchive() {
     }
 }
 
+// MARK: - 账单解析与对账
+
+func gbkData(_ s: String) -> Data? {
+    let cfEncoding = CFStringEncoding(CFStringEncodings.GB_18030_2000.rawValue)
+    let nsEncoding = CFStringConvertEncodingToNSStringEncoding(cfEncoding)
+    return s.data(using: String.Encoding(rawValue: nsEncoding))
+}
+
+func sha256Hex(_ s: String) -> String {
+    SHA256.hash(data: Data(s.utf8))
+        .map { String(format: "%02x", $0) }
+        .joined()
+}
+
+// MARK: 最小 ZIP 写入（仅测试用）
+
+private let crcTable: [UInt32] = {
+    var table = [UInt32](repeating: 0, count: 256)
+    for n in 0..<256 {
+        var c = UInt32(n)
+        for _ in 0..<8 {
+            c = (c & 1) != 0 ? 0xEDB88320 ^ (c >> 1) : c >> 1
+        }
+        table[n] = c
+    }
+    return table
+}()
+
+private func crc32(_ data: Data) -> UInt32 {
+    var crc: UInt32 = 0xFFFF_FFFF
+    for byte in data {
+        crc = crcTable[Int((crc ^ UInt32(byte)) & 0xFF)] ^ (crc >> 8)
+    }
+    return crc ^ 0xFFFF_FFFF
+}
+
+private func buildZip(entries: [(name: String, data: Data)]) -> Data {
+    var localParts: [Data] = []
+    var centralParts: [Data] = []
+    var offset: UInt32 = 0
+
+    for entry in entries {
+        let nameData = Data(entry.name.utf8)
+        let crc = crc32(entry.data)
+
+        var local = Data()
+        local.append(UInt32(0x04034B50).littleEndianData)
+        local.append(UInt16(20).littleEndianData)   // version needed
+        local.append(UInt16(0).littleEndianData)    // flags
+        local.append(UInt16(0).littleEndianData)    // method: stored
+        local.append(UInt16(0).littleEndianData)    // mod time
+        local.append(UInt16(0).littleEndianData)    // mod date
+        local.append(crc.littleEndianData)
+        local.append(UInt32(entry.data.count).littleEndianData)
+        local.append(UInt32(entry.data.count).littleEndianData)
+        local.append(UInt16(nameData.count).littleEndianData)
+        local.append(UInt16(0).littleEndianData)    // extra len
+        local.append(nameData)
+        local.append(entry.data)
+        localParts.append(local)
+
+        var central = Data()
+        central.append(UInt32(0x02014B50).littleEndianData)
+        central.append(UInt16(20).littleEndianData) // version made by
+        central.append(UInt16(20).littleEndianData) // version needed
+        central.append(UInt16(0).littleEndianData)  // flags
+        central.append(UInt16(0).littleEndianData)  // method: stored
+        central.append(UInt16(0).littleEndianData)  // time
+        central.append(UInt16(0).littleEndianData)  // date
+        central.append(crc.littleEndianData)
+        central.append(UInt32(entry.data.count).littleEndianData)
+        central.append(UInt32(entry.data.count).littleEndianData)
+        central.append(UInt16(nameData.count).littleEndianData)
+        central.append(UInt16(0).littleEndianData)  // extra len
+        central.append(UInt16(0).littleEndianData)  // comment len
+        central.append(UInt16(0).littleEndianData)  // disk number
+        central.append(UInt16(0).littleEndianData)  // internal attrs
+        central.append(UInt32(0).littleEndianData)  // external attrs
+        central.append(offset.littleEndianData)
+        central.append(nameData)
+        centralParts.append(central)
+
+        offset += UInt32(local.count)
+    }
+
+    var output = Data()
+    for part in localParts { output.append(part) }
+    let centralStart = UInt32(output.count)
+    for part in centralParts { output.append(part) }
+
+    var eocd = Data()
+    eocd.append(UInt32(0x06054B50).littleEndianData)
+    eocd.append(UInt16(0).littleEndianData)
+    eocd.append(UInt16(0).littleEndianData)
+    eocd.append(UInt16(entries.count).littleEndianData)
+    eocd.append(UInt16(entries.count).littleEndianData)
+    eocd.append(UInt32(centralParts.reduce(0) { $0 + $1.count }).littleEndianData)
+    eocd.append(centralStart.littleEndianData)
+    eocd.append(UInt16(0).littleEndianData)
+    output.append(eocd)
+    return output
+}
+
+private extension UInt16 {
+    var littleEndianData: Data {
+        var value = littleEndian
+        return Data(bytes: &value, count: MemoryLayout<UInt16>.size)
+    }
+}
+
+private extension UInt32 {
+    var littleEndianData: Data {
+        var value = littleEndian
+        return Data(bytes: &value, count: MemoryLayout<UInt32>.size)
+    }
+}
+
+@MainActor
+func testBillParsers() {
+    let alipayCSV = """
+    --------------------------------
+    导出信息：
+    姓名：测试
+    共2笔记录
+
+    交易时间,交易分类,交易对方,对方账号,商品说明,收/支,金额,收/付款方式,交易状态,交易订单号,商家订单号,备注,
+    2026-08-01 19:13:57,商业服务,杭州深度求索,/,DeepSeek-API服务,支出,9.88,农业银行信用卡(5561),交易成功,2026080123001417881433911615,10P2088431103081731,,
+    2026-07-10 16:56:41,信用借还,花呗,/,花呗主动还款,不计收支,780.96,建设银行储蓄卡(7023),还款成功,2026071029020999880132064051,,,
+    """
+    guard let alipayData = gbkData(alipayCSV) else {
+        expect(false, "支付宝 CSV 编码失败")
+        return
+    }
+    do {
+        let entries = try AlipayBillParser().parse(data: alipayData)
+        expectEqual(entries.count, 2, "支付宝 CSV：数量")
+        expectEqual(entries[0].platform, .alipay, "支付宝 CSV：平台")
+        expectEqual(entries[0].amount, Decimal(string: "-9.88"), "支付宝 CSV：支出为负")
+        expectEqual(entries[0].direction, .expense, "支付宝 CSV：方向")
+        expectEqual(entries[0].transactionId, "2026080123001417881433911615", "支付宝 CSV：订单号")
+        expectEqual(entries[1].direction, .neutral, "支付宝 CSV：不计收支")
+        expectEqual(entries[1].amount, Decimal(string: "780.96"), "支付宝 CSV：中性金额")
+    } catch {
+        expect(false, "支付宝 CSV 解析异常：\(error)")
+    }
+
+    // 合成微信 xlsx
+    let shared = """
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <si><t>交易时间</t></si><si><t>交易类型</t></si><si><t>交易对方</t></si><si><t>商品</t></si>
+    <si><t>收/支</t></si><si><t>金额(元)</t></si><si><t>支付方式</t></si><si><t>当前状态</t></si>
+    <si><t>交易单号</t></si><si><t>商户单号</t></si><si><t>备注</t></si>
+    <si><t>商户消费</t></si><si><t>长春肿瘤医院</t></si><si><t>挂号支付交易378156</t></si>
+    <si><t>支出</t></si><si><t>支付成功</t></si><si><t>招商银行信用卡(7315)</t></si>
+    <si><t>4200003111202607259992563953</t></si><si><t>PT2080875367899734019</t></si>
+    </sst>
+    """
+    let sheet = """
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>
+    <row r="1"><c r="A1" t="s"><v>0</v></c><c r="B1" t="s"><v>1</v></c><c r="C1" t="s"><v>2</v></c><c r="D1" t="s"><v>3</v></c><c r="E1" t="s"><v>4</v></c><c r="F1" t="s"><v>5</v></c><c r="G1" t="s"><v>6</v></c><c r="H1" t="s"><v>7</v></c><c r="I1" t="s"><v>8</v></c><c r="J1" t="s"><v>9</v></c><c r="K1" t="s"><v>10</v></c></row>
+    <row r="2"><c r="A2"><v>46228.52690972222</v></c><c r="B2" t="s"><v>11</v></c><c r="C2" t="s"><v>12</v></c><c r="D2" t="s"><v>13</v></c><c r="E2" t="s"><v>14</v></c><c r="F2"><v>5</v></c><c r="G2" t="s"><v>16</v></c><c r="H2" t="s"><v>15</v></c><c r="I2" t="s"><v>17</v></c><c r="J2" t="s"><v>18</v></c></row>
+    </sheetData></worksheet>
+    """
+    let zip = buildZip(entries: [
+        ("xl/sharedStrings.xml", Data(shared.utf8)),
+        ("xl/worksheets/sheet1.xml", Data(sheet.utf8))
+    ])
+    do {
+        let entries = try WeChatBillParser().parse(data: zip)
+        expectEqual(entries.count, 1, "微信 xlsx：数量")
+        expectEqual(entries[0].platform, .wechat, "微信 xlsx：平台")
+        expectEqual(entries[0].amount, Decimal(string: "-5.00"), "微信 xlsx：支出为负")
+        expectEqual(entries[0].counterparty, "长春肿瘤医院", "微信 xlsx：交易对方")
+        expectEqual(entries[0].transactionId, "4200003111202607259992563953", "微信 xlsx：交易单号")
+        expectEqual(entries[0].method, "招商银行信用卡(7315)", "微信 xlsx：支付方式")
+        expectNotNil(entries[0].paidAt, "微信 xlsx：时间")
+    } catch {
+        expect(false, "微信 xlsx 解析异常：\(error)")
+    }
+}
+
+@MainActor
+func testReconciliation() {
+    let records = [
+        PaymentRecord(
+            amount: Decimal(string: "-9.88")!,
+            merchant: "杭州深度求索",
+            paidAt: Date(timeIntervalSince1970: 1_784_954_000),
+            platform: .alipay,
+            transactionId: "2026080123001417881433911615",
+            transactionIdHash: sha256Hex("2026080123001417881433911615"),
+            status: "交易成功"
+        ),
+        PaymentRecord(
+            amount: Decimal(string: "-64.77")!,
+            merchant: "双阳区晨宇总超市",
+            paidAt: Date(timeIntervalSince1970: 1_784_900_000),
+            platform: .alipay,
+            transactionId: "2026073123001417881422899919",
+            transactionIdHash: sha256Hex("2026073123001417881422899919"),
+            status: "交易成功"
+        )
+    ]
+    let billEntries = [
+        BillEntry(
+            platform: .alipay,
+            paidAt: Date(timeIntervalSince1970: 1_784_954_000),
+            counterparty: "杭州深度求索",
+            direction: .expense,
+            amount: Decimal(string: "-9.88")!,
+            transactionId: "2026080123001417881433911615"
+        ),
+        BillEntry(
+            platform: .alipay,
+            paidAt: Date(timeIntervalSince1970: 1_784_900_000),
+            counterparty: "双阳区晨宇总超市",
+            direction: .expense,
+            amount: Decimal(string: "-64.77")!,
+            transactionId: "2026073123001417881422899919"
+        ),
+        BillEntry(
+            platform: .alipay,
+            paidAt: Date(timeIntervalSince1970: 1_784_800_000),
+            counterparty: "漏记商户",
+            direction: .expense,
+            amount: Decimal(string: "-12.00")!,
+            transactionId: "2026073012301417881400000000"
+        ),
+        BillEntry(
+            platform: .alipay,
+            paidAt: Date(timeIntervalSince1970: 1_784_700_000),
+            counterparty: "金额不一致",
+            direction: .expense,
+            amount: Decimal(string: "-99.00")!,
+            transactionId: "2026072912301417881399999999"
+        ),
+        BillEntry(
+            platform: .alipay,
+            paidAt: Date(timeIntervalSince1970: 1_784_600_000),
+            counterparty: "重复单号",
+            direction: .expense,
+            amount: Decimal(string: "-1.00")!,
+            transactionId: "dup-id"
+        ),
+        BillEntry(
+            platform: .alipay,
+            paidAt: Date(timeIntervalSince1970: 1_784_600_000),
+            counterparty: "重复单号2",
+            direction: .expense,
+            amount: Decimal(string: "-1.00")!,
+            transactionId: "dup-id"
+        )
+    ]
+    // 金额不一致：给本地补一条同单号但金额不同的记录
+    let recordsWithMismatch = records + [
+        PaymentRecord(
+            amount: Decimal(string: "-66.66")!,
+            merchant: "金额不一致",
+            paidAt: Date(timeIntervalSince1970: 1_784_700_000),
+            platform: .alipay,
+            transactionId: "2026072912301417881399999999",
+            transactionIdHash: sha256Hex("2026072912301417881399999999"),
+            status: "交易成功"
+        )
+    ]
+
+    let report = ReconciliationEngine().reconcile(
+        billEntries: billEntries,
+        records: recordsWithMismatch
+    )
+
+    expectEqual(report.matched.count, 2, "对账：匹配数量")
+    expectEqual(report.missingInApp.count, 2, "对账：账单有而 App 无")
+    expectEqual(report.missingInApp.first?.counterparty, "漏记商户", "对账：漏记商户")
+    expectEqual(report.amountMismatched.count, 1, "对账：金额不一致")
+    expectEqual(report.duplicatesInBill.count, 1, "对账：账单内重复")
+    expectEqual(report.missingInBill.count, 0, "对账：App 有而账单无")
+}
+
+@MainActor
+func validateRealBills(csvPath: String, xlsxPath: String) {
+    print("\n===== 真实账单验证 =====")
+    do {
+        let csvData = try Data(contentsOf: URL(fileURLWithPath: csvPath))
+        let alipay = try AlipayBillParser().parse(data: csvData)
+        let income = alipay.filter { $0.direction == .income }.count
+        let expense = alipay.filter { $0.direction == .expense }.count
+        let neutral = alipay.filter { $0.direction == .neutral }.count
+        print("支付宝 CSV：共 \(alipay.count) 笔（收入 \(income) / 支出 \(expense) / 不计收支 \(neutral)）")
+        if let first = alipay.first {
+            print("  首笔：\(first.paidAt) \(first.counterparty ?? "-") \(first.amount) \(first.transactionId ?? "-")")
+        }
+        if let last = alipay.last {
+            print("  末笔：\(last.paidAt) \(last.counterparty ?? "-") \(last.amount) \(last.transactionId ?? "-")")
+        }
+    } catch {
+        print("支付宝解析失败：\(error)")
+    }
+
+    do {
+        let xlsxData = try Data(contentsOf: URL(fileURLWithPath: xlsxPath))
+        let wechat = try WeChatBillParser().parse(data: xlsxData)
+        let income = wechat.filter { $0.direction == .income }.count
+        let expense = wechat.filter { $0.direction == .expense }.count
+        let neutral = wechat.filter { $0.direction == .neutral }.count
+        print("微信 xlsx：共 \(wechat.count) 笔（收入 \(income) / 支出 \(expense) / 中性 \(neutral)）")
+        if let first = wechat.first {
+            print("  首笔：\(first.paidAt) \(first.counterparty ?? "-") \(first.amount) \(first.transactionId ?? "-")")
+        }
+        if let last = wechat.last {
+            print("  末笔：\(last.paidAt) \(last.counterparty ?? "-") \(last.amount) \(last.transactionId ?? "-")")
+        }
+    } catch {
+        print("微信解析失败：\(error)")
+    }
+}
+
 // MARK: - 执行
 
 testParser()
 testCrypto()
 testArchive()
+testBillParsers()
+testReconciliation()
+
+if CommandLine.arguments.count >= 3 {
+    validateRealBills(csvPath: CommandLine.arguments[1], xlsxPath: CommandLine.arguments[2])
+}
 
 print("")
 print("结果：\(passed) 通过，\(failures) 失败")
