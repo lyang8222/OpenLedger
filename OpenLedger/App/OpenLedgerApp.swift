@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UserNotifications
 
 @main
 struct OpenLedgerApp: App {
@@ -10,6 +11,10 @@ struct OpenLedgerApp: App {
             fatalError("无法创建本地数据库：\(error)")
         }
     }()
+
+    init() {
+        UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
+    }
 
     var body: some Scene {
         WindowGroup {

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -24,6 +24,7 @@
 		000000000000000000000212 /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000112 /* LockScreenView.swift */; };
 		000000000000000000000213 /* ReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000113 /* ReminderService.swift */; };
 		000000000000000000000214 /* StatusViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000114 /* StatusViews.swift */; };
+		00000000000000000000021C /* NotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000011C /* NotificationDelegate.swift */; };
 		000000000000000000000215 /* OpenLedgerWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000115 /* OpenLedgerWidgetBundle.swift */; };
 		000000000000000000000216 /* SummaryWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000116 /* SummaryWidget.swift */; };
 		000000000000000000000217 /* WidgetSummaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000119 /* WidgetSummaryStore.swift */; };
@@ -85,6 +86,7 @@
 		000000000000000000000112 /* LockScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenView.swift; sourceTree = "<group>"; };
 		000000000000000000000113 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
 		000000000000000000000114 /* StatusViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusViews.swift; sourceTree = "<group>"; };
+		00000000000000000000011C /* NotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDelegate.swift; sourceTree = "<group>"; };
 		000000000000000000000115 /* OpenLedgerWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLedgerWidgetBundle.swift; sourceTree = "<group>"; };
 		000000000000000000000116 /* SummaryWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 			children = (
 				000000000000000000000111 /* AppLockService.swift */,
 				000000000000000000000113 /* ReminderService.swift */,
+				00000000000000000000011C /* NotificationDelegate.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -315,6 +318,24 @@
 			productReference = 00000000000000000000010D /* OpenLedger.app */;
 			productType = "com.apple.product-type.application";
 		};
+		000000000000000000000302 /* OpenLedgerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000403 /* Build configuration list for PBXNativeTarget "OpenLedgerTests" */;
+			buildPhases = (
+				000000000000000000000504 /* Sources */,
+				000000000000000000000505 /* Frameworks */,
+				000000000000000000000506 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				000000000000000000000602 /* PBXTargetDependency */,
+			);
+			name = OpenLedgerTests;
+			productName = OpenLedgerTests;
+			productReference = 00000000000000000000010F /* OpenLedgerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		000000000000000000000304 /* OpenLedgerWidget */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 000000000000000000000404 /* Build configuration list for PBXNativeTarget "OpenLedgerWidget" */;
@@ -334,24 +355,6 @@
 			productName = OpenLedgerWidget;
 			productReference = 000000000000000000000118 /* OpenLedgerWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
-		};
-		000000000000000000000302 /* OpenLedgerTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 000000000000000000000403 /* Build configuration list for PBXNativeTarget "OpenLedgerTests" */;
-			buildPhases = (
-				000000000000000000000504 /* Sources */,
-				000000000000000000000505 /* Frameworks */,
-				000000000000000000000506 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				000000000000000000000602 /* PBXTargetDependency */,
-			);
-			name = OpenLedgerTests;
-			productName = OpenLedgerTests;
-			productReference = 00000000000000000000010F /* OpenLedgerTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -444,6 +447,7 @@
 				000000000000000000000212 /* LockScreenView.swift in Sources */,
 				000000000000000000000213 /* ReminderService.swift in Sources */,
 				000000000000000000000214 /* StatusViews.swift in Sources */,
+				00000000000000000000021C /* NotificationDelegate.swift in Sources */,
 				000000000000000000000218 /* WidgetSummaryStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -480,20 +484,6 @@
 			targetProxy = 000000000000000000000604 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		000000000000000000000701 /* XCLocalSwiftPackageReference "OpenLedgerCore" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = OpenLedgerCore;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		000000000000000000000702 /* OpenLedgerCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = OpenLedgerCore;
-		};
-/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		000000000000000000000411 /* Debug */ = {
@@ -544,6 +534,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenLedger/Resources/OpenLedger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TM74D4D285;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = OpenLedger/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -567,6 +558,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenLedger/Resources/OpenLedger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TM74D4D285;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = OpenLedger/Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -616,6 +608,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenLedgerWidget/OpenLedgerWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TM74D4D285;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = OpenLedgerWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -639,6 +632,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenLedgerWidget/OpenLedgerWidget.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TM74D4D285;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = OpenLedgerWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -696,6 +690,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		000000000000000000000701 /* XCLocalSwiftPackageReference "OpenLedgerCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = OpenLedgerCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		000000000000000000000702 /* OpenLedgerCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenLedgerCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000303 /* Project object */;
 }
