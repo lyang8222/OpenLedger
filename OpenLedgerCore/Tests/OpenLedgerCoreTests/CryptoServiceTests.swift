@@ -19,13 +19,18 @@ final class CryptoServiceTests: XCTestCase {
     func testEncryptDecryptRoundTrip() throws {
         let key = SymmetricKey(size: .bits256)
         let crypto = CryptoService(keys: InMemoryKeyStorage())
-        let payload = ["hello": "世界", "n": 42]
+        struct SamplePayload: Codable, Equatable {
+            let text: String
+            let number: Int
+        }
+
+        let payload = SamplePayload(text: "世界", number: 42)
 
         let sealed = try crypto.encrypt(payload, using: key)
-        let opened: [String: AnyHashable] = try crypto.decrypt([String: AnyHashable].self, from: sealed, using: key)
+        let opened: SamplePayload = try crypto.decrypt(SamplePayload.self, from: sealed, using: key)
 
-        XCTAssertEqual(opened["hello"], "世界")
-        XCTAssertEqual(opened["n"], 42)
+        XCTAssertEqual(opened.text, "世界")
+        XCTAssertEqual(opened.number, 42)
     }
 
     func testDecryptWithWrongKeyFails() throws {
