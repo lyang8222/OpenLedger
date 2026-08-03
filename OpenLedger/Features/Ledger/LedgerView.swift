@@ -9,23 +9,49 @@ struct LedgerView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if records.isEmpty {
-                    ContentUnavailableView(
-                        "还没有账单",
-                        systemImage: "tray",
-                        description: Text("点击「记账」导入第一张支付截图")
-                    )
-                } else {
-                    List {
-                        ForEach(records) { record in
-                            row(record)
+            ZStack {
+                background
+                    .ignoresSafeArea()
+
+                Group {
+                    if records.isEmpty {
+                        ContentUnavailableView(
+                            "还没有账单",
+                            systemImage: "tray",
+                            description: Text("点击「记账」导入第一张支付截图")
+                        )
+                    } else {
+                        List {
+                            ForEach(records) { record in
+                                row(record)
+                            }
+                            .onDelete(perform: delete)
                         }
-                        .onDelete(perform: delete)
+                        .scrollContentBackground(.hidden)
                     }
                 }
             }
             .navigationTitle("账单")
+        }
+    }
+
+    private var background: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color.indigo.opacity(0.14),
+                    Color.teal.opacity(0.10),
+                    Color.clear
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Circle()
+                .fill(Color.cyan.opacity(0.12))
+                .blur(radius: 80)
+                .frame(width: 340, height: 340)
+                .offset(x: 170, y: -300)
         }
     }
 

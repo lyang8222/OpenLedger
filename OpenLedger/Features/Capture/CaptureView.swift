@@ -22,30 +22,29 @@ struct CaptureView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.18), .clear],
-                    startPoint: .top,
-                    endPoint: .center
-                )
-                .ignoresSafeArea()
+                background
+                    .ignoresSafeArea()
 
-                VStack(spacing: 24) {
-                    Spacer()
+                GlassEffectContainer {
+                    VStack(spacing: 24) {
+                        Spacer()
 
-                    MainCaptureButton {
-                        showSourceMenu = true
+                        MainCaptureButton {
+                            showSourceMenu = true
+                        }
+
+                        Text("导入支付截图")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(.primary)
+
+                        Text("从相册选择或拍摄微信、支付宝等支付截图，识别与存储全程在本机完成")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+
+                        Spacer()
                     }
-
-                    Text("导入支付截图")
-                        .font(.title3.weight(.medium))
-
-                    Text("从相册选择或拍摄微信、支付宝等支付截图，识别与存储全程在本机完成")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-
-                    Spacer()
                 }
             }
             .navigationTitle("记账")
@@ -94,6 +93,32 @@ struct CaptureView: View {
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
                 }
             }
+        }
+    }
+
+    private var background: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.25),
+                    Color.purple.opacity(0.12),
+                    Color.clear
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Circle()
+                .fill(Color.cyan.opacity(0.16))
+                .blur(radius: 70)
+                .frame(width: 320, height: 320)
+                .offset(x: -150, y: -280)
+
+            Circle()
+                .fill(Color.indigo.opacity(0.14))
+                .blur(radius: 80)
+                .frame(width: 340, height: 340)
+                .offset(x: 160, y: 300)
         }
     }
 

@@ -8,14 +8,17 @@ struct RootView: View {
 
     var body: some View {
         TabView {
-            CaptureView()
-                .tabItem { Label("记账", systemImage: "plus.circle.fill") }
+            Tab("记账", systemImage: "plus.circle.fill") {
+                CaptureView()
+            }
 
-            LedgerView()
-                .tabItem { Label("账单", systemImage: "list.bullet.rectangle") }
+            Tab("账单", systemImage: "list.bullet.rectangle") {
+                LedgerView()
+            }
 
-            SettingsView(appLock: appLock)
-                .tabItem { Label("设置", systemImage: "gearshape.fill") }
+            Tab("设置", systemImage: "gearshape.fill") {
+                SettingsView(appLock: appLock)
+            }
         }
         .overlay {
             if appLock.isLocked {
@@ -39,6 +42,5 @@ struct RootView: View {
                 await ReminderService.refreshSummaries(records: records)
             }
         }
-        // TODO(M4): iOS 26 的 Liquid Glass 标签栏为系统默认效果，后续统一打磨
     }
 }

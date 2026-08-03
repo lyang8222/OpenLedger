@@ -40,8 +40,12 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("隐私保护") {
+            ZStack {
+                background
+                    .ignoresSafeArea()
+
+                Form {
+                    Section("隐私保护") {
                     Toggle(
                         "面容 / 触控 ID 解锁",
                         isOn: Binding(
@@ -63,7 +67,7 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Section("对账") {
+                    Section("对账") {
                     Button {
                         showReconciliation = true
                     } label: {
@@ -71,7 +75,7 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("数据与隐私") {
+                    Section("数据与隐私") {
                     Button("导出加密备份") {
                         pendingAction = .export
                         passphrase = ""
@@ -82,13 +86,13 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("本地存储") {
+                    Section("本地存储") {
                     LabeledContent("账单数量", value: "\(records.count)")
                     LabeledContent("多端同步", value: "仅隔空投送")
                     LabeledContent("网络", value: "无")
                 }
 
-                Section("账单提醒") {
+                    Section("账单提醒") {
                     Toggle("账单总结提醒", isOn: $remindersEnabled)
                         .onChange(of: remindersEnabled) { _, enabled in
                             if enabled {
@@ -131,15 +135,17 @@ struct SettingsView: View {
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
-                }
-                .onChange(of: dailyReminderEnabled) { _, _ in refreshReminders() }
+                    }
+                    .onChange(of: dailyReminderEnabled) { _, _ in refreshReminders() }
                 .onChange(of: weeklyReminderEnabled) { _, _ in refreshReminders() }
                 .onChange(of: monthlyReminderEnabled) { _, _ in refreshReminders() }
                 .onChange(of: quarterlyReminderEnabled) { _, _ in refreshReminders() }
                 .onChange(of: yearlyReminderEnabled) { _, _ in refreshReminders() }
                 .onChange(of: dailyTimeMinutes) { _, _ in refreshReminders() }
                 .onChange(of: weeklyWeekday) { _, _ in refreshReminders() }
-                .onChange(of: showAmountsInNotifications) { _, _ in refreshReminders() }
+                    .onChange(of: showAmountsInNotifications) { _, _ in refreshReminders() }
+                }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("设置")
             .sheet(isPresented: $showReconciliation) {
@@ -209,6 +215,26 @@ struct SettingsView: View {
             exportBackup()
         case .restore:
             restoreBackup()
+        }
+    }
+
+    private var background: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.12),
+                    Color.purple.opacity(0.10),
+                    Color.clear
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            Circle()
+                .fill(Color.indigo.opacity(0.12))
+                .blur(radius: 80)
+                .frame(width: 360, height: 360)
+                .offset(x: -170, y: 320)
         }
     }
 
