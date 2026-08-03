@@ -48,6 +48,7 @@ enum ScreenshotPromptService {
 struct CaptureView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Query private var records: [PaymentRecordModel]
 
     @State private var showSourceMenu = false
     @State private var showPhotoPicker = false
@@ -57,6 +58,7 @@ struct CaptureView: View {
     @State private var selectedItem: PhotosPickerItem?
     @State private var draft: PaymentDraft?
     @State private var errorMessage: String?
+    @State private var errorTitle = "识别失败"
     @State private var lastImage: UIImage?
     @State private var showMissingBanner = true
     @State private var showReconciliation = false
@@ -128,7 +130,7 @@ struct CaptureView: View {
 
                         if let errorMessage {
                             InlineErrorCard(
-                                title: "识别失败",
+                                title: errorTitle,
                                 message: errorMessage,
                                 retryTitle: lastImage != nil ? "重试" : nil,
                                 retry: lastImage != nil ? {
@@ -247,6 +249,7 @@ struct CaptureView: View {
         }
         lastImage = image
         errorMessage = nil
+        errorTitle = "识别失败"
         isProcessing = true
         do {
             let result = try pipeline.recognize(cgImage: cgImage)
@@ -260,6 +263,14 @@ struct CaptureView: View {
 
     private func save(_ updated: PaymentDraft) {
         do {
+            if isDuplicate(updated) {
+                errorTitle = "重复账单"
+                errorMessage = "该笔交易已存在，已跳过重复保存"
+                draft = nil
+                selectedItem = nil
+                showReview = false
+                return
+            }
             let model = try PaymentRecordModel.make(from: updated, crypto: crypto)
             modelContext.insert(model)
             try modelContext.save()
@@ -271,6 +282,25 @@ struct CaptureView: View {
             onSaved?(amount, recordID)
         } catch {
             errorMessage = "保存失败：\(error.localizedDescription)"
+        }
+    }
+
+    private func isDuplicate(_ draft: PaymentDraft) -> Bool {
+        let hash = draft.transactionId.map(PaymentRecordModel.transactionIdHash)
+        let amount = draft.amount
+        let merchant = draft.merchant
+        let paidAt = draft.paidAt
+
+        return records.contains { record in
+            if let hash, record.transactionIdHash == hash {
+                return true
+            }
+            guard let paidAt, let recordPaidAt = record.paidAt,
+                  amount != nil, record.amount == amount,
+                  merchant != nil, record.merchant == merchant else {
+                return false
+            }
+            return abs(paidAt.timeIntervalSince(recordPaidAt)) < 300
         }
     }
 }

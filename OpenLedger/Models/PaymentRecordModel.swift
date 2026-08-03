@@ -64,11 +64,7 @@ final class PaymentRecordModel {
         let key = try crypto.masterKey()
 
         let transactionId = draft.transactionId
-        let transactionIdHash = transactionId.map {
-            SHA256.hash(data: Data($0.utf8))
-                .map { String(format: "%02x", $0) }
-                .joined()
-        }
+        let transactionIdHash = transactionId.map(Self.transactionIdHash)
         let transactionIdEncrypted = try transactionId.map {
             try crypto.encrypt($0, using: key)
         }
@@ -86,5 +82,11 @@ final class PaymentRecordModel {
             rawOcrTextEncrypted: rawOcrTextEncrypted,
             status: draft.status
         )
+    }
+
+    static func transactionIdHash(_ value: String) -> String {
+        SHA256.hash(data: Data(value.utf8))
+            .map { String(format: "%02x", $0) }
+            .joined()
     }
 }
