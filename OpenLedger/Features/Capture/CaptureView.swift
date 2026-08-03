@@ -15,6 +15,7 @@ struct CaptureView: View {
     @State private var selectedItem: PhotosPickerItem?
     @State private var draft: PaymentDraft?
     @State private var errorMessage: String?
+    @State private var lastImage: UIImage?
 
     private let pipeline = RecognitionPipeline()
     private let crypto = CryptoService()
@@ -43,6 +44,21 @@ struct CaptureView: View {
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 40)
+
+                        if let errorMessage {
+                            InlineErrorCard(
+                                title: "识别失败",
+                                message: errorMessage,
+                                retryTitle: lastImage != nil ? "重试" : nil,
+                                retry: lastImage != nil ? {
+                                    if let image = lastImage {
+                                        process(image)
+                                    }
+                                } : nil
+                            )
+                            .padding(.horizontal, 32)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                        }
 
                         Spacer()
                     }
@@ -75,17 +91,6 @@ struct CaptureView: View {
                         save(updated)
                     }
                 }
-            }
-            .alert(
-                "提示",
-                isPresented: Binding(
-                    get: { errorMessage != nil },
-                    set: { if !$0 { errorMessage = nil } }
-                )
-            ) {
-                Button("好", role: .cancel) {}
-            } message: {
-                Text(errorMessage ?? "")
             }
             .overlay {
                 if isProcessing {
@@ -137,6 +142,8 @@ struct CaptureView: View {
             errorMessage = "图片格式不受支持"
             return
         }
+        lastImage = image
+        errorMessage = nil
         isProcessing = true
         do {
             let result = try pipeline.recognize(cgImage: cgImage)

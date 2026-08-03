@@ -24,7 +24,12 @@ struct RootView: View {
             }
 
             Tab("账单", systemImage: "list.bullet.rectangle", value: AppTab.ledger) {
-                LedgerView(highlightRecordID: highlightRecordID)
+                LedgerView(
+                    highlightRecordID: highlightRecordID,
+                    onGoCapture: {
+                        selectedTab = .capture
+                    }
+                )
             }
 
             Tab("设置", systemImage: "gearshape.fill", value: AppTab.settings) {

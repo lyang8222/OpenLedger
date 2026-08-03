@@ -8,9 +8,14 @@ struct LedgerView: View {
     private var records: [PaymentRecordModel]
 
     let highlightRecordID: UUID?
+    var onGoCapture: (() -> Void)?
 
-    init(highlightRecordID: UUID? = nil) {
+    init(
+        highlightRecordID: UUID? = nil,
+        onGoCapture: (() -> Void)? = nil
+    ) {
         self.highlightRecordID = highlightRecordID
+        self.onGoCapture = onGoCapture
     }
 
     var body: some View {
@@ -21,10 +26,12 @@ struct LedgerView: View {
 
                 Group {
                     if records.isEmpty {
-                        ContentUnavailableView(
-                            "还没有账单",
+                        GlassEmptyState(
+                            title: "还没有账单",
+                            message: "导入第一张支付截图，自动完成记账",
                             systemImage: "tray",
-                            description: Text("点击「记账」导入第一张支付截图")
+                            actionTitle: "去记账",
+                            action: onGoCapture
                         )
                     } else {
                         List {

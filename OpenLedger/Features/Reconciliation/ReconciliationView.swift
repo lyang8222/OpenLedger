@@ -32,10 +32,14 @@ struct ReconciliationView: View {
                 } else if let report {
                     reportList(report)
                 } else {
-                    ContentUnavailableView(
-                        "导入平台账单",
+                    GlassEmptyState(
+                        title: "导入平台账单",
+                        message: "支持支付宝 CSV、微信 xlsx，以及两者官方导出的加密 zip",
                         systemImage: "doc.badge.arrow.up",
-                        description: Text("支持支付宝 CSV、微信 xlsx，以及两者官方导出的加密 zip")
+                        actionTitle: "选择账单文件",
+                        action: {
+                            showImporter = true
+                        }
                     )
                 }
             }

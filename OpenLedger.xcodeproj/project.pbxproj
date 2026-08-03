@@ -23,6 +23,7 @@
 		000000000000000000000211 /* AppLockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000111 /* AppLockService.swift */; };
 		000000000000000000000212 /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000112 /* LockScreenView.swift */; };
 		000000000000000000000213 /* ReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000113 /* ReminderService.swift */; };
+		000000000000000000000214 /* StatusViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000114 /* StatusViews.swift */; };
 		000000000000000000000703 /* OpenLedgerCore in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000000000702 /* OpenLedgerCore */; };
 /* End PBXBuildFile section */
 
@@ -56,6 +57,7 @@
 		000000000000000000000111 /* AppLockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockService.swift; sourceTree = "<group>"; };
 		000000000000000000000112 /* LockScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenView.swift; sourceTree = "<group>"; };
 		000000000000000000000113 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
+		000000000000000000000114 /* StatusViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -175,6 +177,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000108 /* MainCaptureButton.swift */,
+				000000000000000000000114 /* StatusViews.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -342,6 +345,7 @@
 				000000000000000000000211 /* AppLockService.swift in Sources */,
 				000000000000000000000212 /* LockScreenView.swift in Sources */,
 				000000000000000000000213 /* ReminderService.swift in Sources */,
+				000000000000000000000214 /* StatusViews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
