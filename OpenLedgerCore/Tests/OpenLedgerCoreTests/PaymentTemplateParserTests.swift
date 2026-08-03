@@ -99,4 +99,56 @@ final class PaymentTemplateParserTests: XCTestCase {
         XCTAssertEqual(draft.status, "还款成功")
         XCTAssertEqual(draft.transactionId, "2026071029020999880132064051")
     }
+
+    func testUnionpayDetail() {
+        let lines = [
+            "22:16", "64", "银联交易详情", "信用卡还款", "-￥100.00", "卡号",
+            "交易时间", "订单金额", "交易渠道", "对方姓名", "对方卡号", "交易类别",
+            "分类", "发卡机构", "收单机构", "商户编号", "终端编号", "批次号",
+            "凭证号", "参考号", "建设银行银联储蓄卡［7023］", "2026-07-24 09:55:43",
+            "¥100.00", "云闪付APP", "鲁阳", "交通银行银联信用卡［4543］", "消费",
+            "资金往来-转账", "建设银行", "银联商务股份有限公司", "001980099990002",
+            "01080209", "095543", "811465", "095543138907", "在此商户交易", "￥Q", "余额查询"
+        ]
+
+        let draft = parser.parse(lines: lines)
+        XCTAssertEqual(draft.platform, .unionpay)
+        XCTAssertEqual(draft.amount, Decimal(string: "-100.00"))
+        XCTAssertEqual(draft.merchant, "信用卡还款")
+        XCTAssertNotNil(draft.paidAt)
+        XCTAssertEqual(draft.status, "消费")
+        XCTAssertEqual(draft.transactionId, "095543138907")
+    }
+
+    func testDouyinBillDetail() {
+        let lines = [
+            "22:19", "63", "账单详情", "全部账单", "49", "上海华莱士贸易有限公司",
+            "-9.89", "支付成功", "抖音支付优惠", "付款方式", "免单奖励", "抽免单资格已过期",
+            "¥0.01", "小抖音月付＞", "免下单后抽免单へ", "规则",
+            "恭喜你，有机会获得20元支付红包＞", "月付账单信息", "支付时间", "交易单号",
+            "商户单号", "已还清", "2026-05-24 15:29:56", "2001022605240105005401321141",
+            "1095184204395227346", "商品订单", "W生莱士国", "味滋脆鸡肉堡两个（",
+            "【经典双堡】咔滋脆鸡肉堡两个-可配送C1 >", "21"
+        ]
+
+        let draft = parser.parse(lines: lines)
+        XCTAssertEqual(draft.platform, .douyin)
+        XCTAssertEqual(draft.amount, Decimal(string: "-9.89"))
+        XCTAssertEqual(draft.merchant, "上海华莱士贸易有限公司")
+        XCTAssertNotNil(draft.paidAt)
+        XCTAssertEqual(draft.status, "支付成功")
+        XCTAssertEqual(draft.transactionId, "2001022605240105005401321141")
+    }
+
+    func testDouyinWithDeleteButton() {
+        let lines = [
+            "22:19", "账单详情", "删除", "49", "福州塔斯汀䬸饮管理有限公司",
+            "-68.90", "支付成功", "付款方式", "月付账单信息", "支付时间", "交易单号",
+            "商户单号", "2026-05-24 15:29:18", "2001022605240105002198931488",
+            "1095142965546587346", "商品订单"
+        ]
+
+        let draft = parser.parse(lines: lines)
+        XCTAssertEqual(draft.merchant, "福州塔斯汀䬸饮管理有限公司")
+    }
 }

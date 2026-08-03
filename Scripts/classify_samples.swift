@@ -34,6 +34,18 @@ let alipayStrong: [String] = [
 ]
 let alipayWeak: [String] = []
 
+let unionpayStrong: [String] = [
+    "银联交易详情", "云闪付", "商户编号", "终端编号", "批次号", "凭证号",
+    "参考号", "授权号", "发卡机构", "交易类别", "对方卡号", "卡号"
+]
+let unionpayWeak: [String] = ["信用卡还款"]
+
+let douyinStrong: [String] = [
+    "抖音支付", "抖音月付", "月付账单信息", "免单奖励", "抽免单",
+    "商品订单", "已还清", "商户单号", "交易单号"
+]
+let douyinWeak: [String] = []
+
 func ocrText(at url: URL) -> [String] {
     guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
           let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
@@ -59,8 +71,12 @@ func classify(_ lines: [String]) -> String {
     let text = lines.joined(separator: "\n")
     var wechatScore = 0
     var alipayScore = 0
+    var unionpayScore = 0
+    var douyinScore = 0
     var wechatHits: [String] = []
     var alipayHits: [String] = []
+    var unionpayHits: [String] = []
+    var douyinHits: [String] = []
 
     for marker in wechatStrong where text.contains(marker) {
         wechatScore += 10
@@ -79,14 +95,46 @@ func classify(_ lines: [String]) -> String {
         alipayHits.append(marker)
     }
 
-    if wechatScore > alipayScore {
+    for marker in unionpayStrong where text.contains(marker) {
+        unionpayScore += 10
+        unionpayHits.append(marker)
+    }
+    for marker in unionpayWeak where text.contains(marker) {
+        unionpayScore += 1
+        unionpayHits.append(marker)
+    }
+
+    for marker in douyinStrong where text.contains(marker) {
+        douyinScore += 10
+        douyinHits.append(marker)
+    }
+    for marker in douyinWeak where text.contains(marker) {
+        douyinScore += 1
+        douyinHits.append(marker)
+    }
+
+    let scores: [(String, Int, [String])] = [
+        ("wechat", wechatScore, wechatHits),
+        ("alipay", alipayScore, alipayHits),
+        ("unionpay", unionpayScore, unionpayHits),
+        ("douyin", douyinScore, douyinHits)
+    ]
+
+    if let best = scores.max(by: { $0.1 < $1.1 }), best.1 > 0 {
+        let tied = scores.filter { $0.1 == best.1 && $0.1 > 0 }
+        if tied.count == 1 {
+            return "\(best.0)(\(best.2.joined(separator: ",")))"
+        }
+        // 并列时按已知优先级：微信 > 支付宝 > 云闪付 > 抖音
+        for (name, _, hits) in scores where hits.isEmpty == false {
+            if tied.contains(where: { $0.0 == name }) {
+                return "\(name)(\(hits.joined(separator: ",")))"
+            }
+        }
+    }
+
+    if wechatScore > alipayScore && wechatScore > unionpayScore && wechatScore > douyinScore {
         return "wechat(\(wechatHits.joined(separator: ",")))"
-    } else if alipayScore > wechatScore {
-        return "alipay(\(alipayHits.joined(separator: ",")))"
-    } else if wechatScore > 0 {
-        return "wechat(\(wechatHits.joined(separator: ",")))"
-    } else if alipayScore > 0 {
-        return "alipay(\(alipayHits.joined(separator: ",")))"
     }
     return "unknown()"
 }
@@ -104,6 +152,8 @@ print("共找到 \(images.count) 张图片\n")
 
 var wechatCount = 0
 var alipayCount = 0
+var unionpayCount = 0
+var douyinCount = 0
 var unknownCount = 0
 
 for name in images {
@@ -111,7 +161,8 @@ for name in images {
     let lines = ocrText(at: url)
     let result = classify(lines)
 
-    guard result.hasPrefix("wechat(") || result.hasPrefix("alipay(") else {
+    let knownPlatforms = ["wechat", "alipay", "unionpay", "douyin"]
+    guard let platform = knownPlatforms.first(where: { result.hasPrefix($0 + "(") }) else {
         print("\(name) -> \(result)")
         print("  OCR 文本：")
         for line in lines.prefix(15) {
@@ -123,14 +174,18 @@ for name in images {
 
     print("\(name) -> \(result)")
 
-    let platform = result.hasPrefix("wechat(") ? "wechat" : "alipay"
-    let index = platform == "wechat" ? wechatCount + 1 : alipayCount + 1
+    switch platform {
+    case "wechat": wechatCount += 1
+    case "alipay": alipayCount += 1
+    case "unionpay": unionpayCount += 1
+    default: douyinCount += 1
+    }
     let ext = (name as NSString).pathExtension.lowercased()
     let destDir = URL(fileURLWithPath: destRoot).appendingPathComponent(platform)
     try? fm.createDirectory(at: destDir, withIntermediateDirectories: true)
 
     // 找到目录中下一个可用序号，绝不覆盖已有文件
-    var candidate = index
+    var candidate = 1
     var dest = destDir.appendingPathComponent("\(platform)_\(String(format: "%02d", candidate)).\(ext)")
     while fm.fileExists(atPath: dest.path) && url.standardizedFileURL != dest.standardizedFileURL {
         candidate += 1
@@ -139,15 +194,13 @@ for name in images {
 
     do {
         if url.standardizedFileURL == dest.standardizedFileURL {
-            if platform == "wechat" { wechatCount += 1 } else { alipayCount += 1 }
             continue
         }
         try fm.moveItem(at: url, to: dest)
-        if platform == "wechat" { wechatCount += 1 } else { alipayCount += 1 }
     } catch {
         print("  移动失败：\(error.localizedDescription)")
         unknownCount += 1
     }
 }
 
-print("\n归档完成：微信 \(wechatCount) 张，支付宝 \(alipayCount) 张，未识别 \(unknownCount) 张")
+print("\n归档完成：微信 \(wechatCount) 张，支付宝 \(alipayCount) 张，云闪付 \(unionpayCount) 张，抖音 \(douyinCount) 张，未识别 \(unknownCount) 张")

@@ -16,9 +16,9 @@ let imageExtensions: Set<String> = ["jpg", "jpeg", "png", "heic", "gif", "webp"]
 
 let labelKeywords: [String] = [
     "账单", "详情", "全部", "主页", "留言", "喜欢", "小程序", "服务", "状态",
-    "时间", "方式", "商品", "订单", "金额", "机构", "单号", "成功", "管理",
+    "时间", "方式", "商品", "订单", "金额", "机构", "单号", "成功",
     "记录", "推荐", "积分", "立减", "奖励", "备注", "说明", "请选择", "查看",
-    "添加", "标签", "分类", "收支", "关联", "E2", "到"
+    "添加", "标签", "分类", "收支", "关联", "删除", "E2", "到"
 ]
 
 func ocrText(at url: URL) -> [String] {
@@ -48,10 +48,18 @@ func isLabelish(_ s: String) -> Bool {
     if t.isEmpty { return true }
     if t == "闪购" { return true }
     if t.count <= 2 && t.range(of: #"^\d+$"#, options: .regularExpression) != nil { return true }
+    if t.count <= 4 && t.range(of: #"^[0-9]{1,3}[）)]?$"#, options: .regularExpression) != nil { return true }
     if t.count <= 4 && t.range(of: #"^[：！!…·•:：\dA-Za-z]+$"#, options: .regularExpression) != nil { return true }
     if t.range(of: #"^[0-9]{1,2}:[0-9]{2}$"#, options: .regularExpression) != nil { return true }
     if t.contains("：") || t.contains("！") || t.hasSuffix("＞") || t.hasSuffix(">") { return true }
     return labelKeywords.contains { t.contains($0) }
+}
+
+func strippingTrailingChevron(_ s: String) -> String {
+    trimmed(s)
+        .replacingOccurrences(of: "＞", with: "")
+        .replacingOccurrences(of: ">", with: "")
+        .trimmingCharacters(in: .whitespacesAndNewlines)
 }
 
 func extractAmount(from lines: [String]) -> (value: String, index: Int)? {
@@ -81,22 +89,27 @@ func extractMerchant(lines: [String], amountIndex: Int, platform: String) -> Str
         }
         if repayIndex + 1 < lines.count {
             let next = trimmed(lines[repayIndex + 1])
-            if !next.isEmpty && !isLabelish(next) { return next }
+            let amountPattern = #"^[-+]?[¥￥]?[0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2}$"#
+            if next.range(of: amountPattern, options: .regularExpression) == nil,
+               !next.isEmpty && !isLabelish(next) {
+                return next
+            }
         }
         return repayLine
     }
     // 微信：金额下方第一个非标签行（商户名常出现在金额下方）
     if platform == "wechat" {
         for j in (amountIndex + 1)..<min(amountIndex + 6, lines.count) {
-            let t = trimmed(lines[j])
-            if t.contains("当前状态") || t.contains("支付成功") || t.contains("交易成功") { break }
+            let raw = trimmed(lines[j])
+            if raw.contains("当前状态") || raw.contains("支付成功") || raw.contains("交易成功") { break }
+            let t = strippingTrailingChevron(raw)
             if !isLabelish(t) { return t }
         }
     }
     // 通用：取金额上方最近的、不像标签/界面的文本行
     let upper = lines[..<amountIndex].reversed()
     for line in upper {
-        let t = trimmed(line)
+        let t = strippingTrailingChevron(line)
         if !isLabelish(t) { return t }
     }
     return nil
@@ -112,16 +125,37 @@ func extractTime(from lines: [String]) -> String? {
     return nil
 }
 
-func extractStatus(from lines: [String]) -> String? {
+func extractStatus(from lines: [String], platform: String) -> String? {
     for line in lines {
         if line.contains("支付成功") || line.contains("交易成功") || line.contains("还款成功") {
             return trimmed(line)
         }
     }
+    if platform == "unionpay",
+       let labelIndex = lines.firstIndex(where: { $0.contains("交易类别") }) {
+        for j in (labelIndex + 1)..<lines.count {
+            let t = trimmed(lines[j])
+            if ["消费", "入账", "转账"].contains(t) {
+                return t
+            }
+        }
+    }
     return nil
 }
 
-func extractTransactionId(from lines: [String]) -> String? {
+func extractTransactionId(from lines: [String], platform: String) -> String? {
+    if platform == "unionpay" {
+        let pattern = #"^[0-9]{10,}$"#
+        var last: String?
+        for line in lines {
+            let t = trimmed(line)
+            if t.range(of: pattern, options: .regularExpression) != nil {
+                last = t
+            }
+        }
+        return last
+    }
+
     let labels = ["交易单号", "转账单号", "订单号"]
     for (i, line) in lines.enumerated() {
         guard labels.contains(where: { line.contains($0) }) else { continue }
@@ -157,7 +191,7 @@ struct Record {
 
 var records: [Record] = []
 
-for platform in ["wechat", "alipay"] {
+for platform in ["wechat", "alipay", "unionpay", "douyin"] {
     let dir = URL(fileURLWithPath: samplesRoot).appendingPathComponent(platform)
     let files = (try? fm.contentsOfDirectory(atPath: dir.path))?
         .filter { imageExtensions.contains(($0 as NSString).pathExtension.lowercased()) }
@@ -169,8 +203,8 @@ for platform in ["wechat", "alipay"] {
         let amount = extractAmount(from: lines)
         let merchant = amount.flatMap { extractMerchant(lines: lines, amountIndex: $0.index, platform: platform) }
         let time = extractTime(from: lines)
-        let status = extractStatus(from: lines)
-        let transactionId = extractTransactionId(from: lines)
+        let status = extractStatus(from: lines, platform: platform)
+        let transactionId = extractTransactionId(from: lines, platform: platform)
         records.append(Record(
             file: name,
             platform: platform,
@@ -205,7 +239,7 @@ print("时间：\(rate(\.time))")
 print("交易单号：\(rate(\.transactionId))")
 print("状态：\(rate(\.status))")
 
-for platform in ["wechat", "alipay"] {
+for platform in ["wechat", "alipay", "unionpay", "douyin"] {
     let sub = records.filter { $0.platform == platform }
     let hit = sub.filter { $0.amount != nil && $0.merchant != nil && $0.time != nil && $0.status != nil }.count
     print("\(platform)：核心四字段（金额/商户/时间/状态）全命中 \(hit)/\(sub.count)")
@@ -213,13 +247,13 @@ for platform in ["wechat", "alipay"] {
 
 // 生成审计报告（含 OCR 原文；位于 samples/ 下，不会被提交）
 var md = "# M0 识别验证报告\n\n生成时间：\(Date())\n\n"
-md += "样本数：微信 \(records.filter { $0.platform == "wechat" }.count) 张，支付宝 \(records.filter { $0.platform == "alipay" }.count) 张\n\n"
+md += "样本数：微信 \(records.filter { $0.platform == "wechat" }.count) 张，支付宝 \(records.filter { $0.platform == "alipay" }.count) 张，云闪付 \(records.filter { $0.platform == "unionpay" }.count) 张，抖音 \(records.filter { $0.platform == "douyin" }.count) 张\n\n"
 md += "## 提取结果\n\n| 文件 | 金额 | 商户 | 时间 | 交易单号 | 状态 |\n|---|---|---|---|---|---|\n"
 for r in records {
     md += "| \(r.file) | \(r.amount ?? "-") | \(r.merchant ?? "-") | \(r.time ?? "-") | \(r.transactionId ?? "-") | \(r.status ?? "-") |\n"
 }
 md += "\n## OCR 原文\n\n"
-for platform in ["wechat", "alipay"] {
+for platform in ["wechat", "alipay", "unionpay", "douyin"] {
     let dir = URL(fileURLWithPath: samplesRoot).appendingPathComponent(platform)
     let files = (try? fm.contentsOfDirectory(atPath: dir.path))?
         .filter { imageExtensions.contains(($0 as NSString).pathExtension.lowercased()) }

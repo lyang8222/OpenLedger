@@ -23,10 +23,24 @@ public struct PaymentTemplateParser: Sendable {
     ]
     private static let alipayWeak: [String] = []
 
+    private static let unionpayStrong: [String] = [
+        "银联交易详情", "云闪付", "商户编号", "终端编号", "批次号", "凭证号",
+        "参考号", "授权号", "发卡机构", "交易类别", "对方卡号", "卡号"
+    ]
+    private static let unionpayWeak: [String] = ["信用卡还款"]
+
+    private static let douyinStrong: [String] = [
+        "抖音支付", "抖音月付", "月付账单信息", "免单奖励", "抽免单",
+        "商品订单", "已还清", "商户单号", "交易单号"
+    ]
+    private static let douyinWeak: [String] = []
+
     public func classifyPlatform(from lines: [String]) -> PaymentRecord.Platform {
         let text = lines.joined(separator: "\n")
         var wechatScore = 0
         var alipayScore = 0
+        var unionpayScore = 0
+        var douyinScore = 0
 
         for marker in Self.wechatStrong where text.contains(marker) {
             wechatScore += 10
@@ -40,11 +54,28 @@ public struct PaymentTemplateParser: Sendable {
         for marker in Self.alipayWeak where text.contains(marker) {
             alipayScore += 1
         }
+        for marker in Self.unionpayStrong where text.contains(marker) {
+            unionpayScore += 10
+        }
+        for marker in Self.unionpayWeak where text.contains(marker) {
+            unionpayScore += 1
+        }
+        for marker in Self.douyinStrong where text.contains(marker) {
+            douyinScore += 10
+        }
+        for marker in Self.douyinWeak where text.contains(marker) {
+            douyinScore += 1
+        }
 
-        if wechatScore > alipayScore { return .wechat }
-        if alipayScore > wechatScore { return .alipay }
-        if wechatScore > 0 { return .wechat }
-        if alipayScore > 0 { return .alipay }
+        let scores: [(PaymentRecord.Platform, Int)] = [
+            (.wechat, wechatScore),
+            (.alipay, alipayScore),
+            (.unionpay, unionpayScore),
+            (.douyin, douyinScore)
+        ]
+        if let best = scores.max(by: { $0.1 < $1.1 }), best.1 > 0 {
+            return best.0
+        }
         return .unknown
     }
 
@@ -66,10 +97,10 @@ public struct PaymentTemplateParser: Sendable {
         let paidAt = timeText.flatMap(Self.parseDate)
         if paidAt == nil { missing.insert("时间") }
 
-        let status = Self.extractStatus(from: lines)
+        let status = Self.extractStatus(from: lines, platform: platform)
         if status == nil { missing.insert("状态") }
 
-        let transactionId = Self.extractTransactionId(from: lines)
+        let transactionId = Self.extractTransactionId(from: lines, platform: platform)
         if transactionId == nil { missing.insert("交易单号") }
 
         return PaymentDraft(
@@ -88,9 +119,9 @@ public struct PaymentTemplateParser: Sendable {
 
     private static let labelKeywords: [String] = [
         "账单", "详情", "全部", "主页", "留言", "喜欢", "小程序", "服务", "状态",
-        "时间", "方式", "商品", "订单", "金额", "机构", "单号", "成功", "管理",
+        "时间", "方式", "商品", "订单", "金额", "机构", "单号", "成功",
         "记录", "推荐", "积分", "立减", "奖励", "备注", "说明", "请选择", "查看",
-        "添加", "标签", "分类", "收支", "关联", "E2", "到"
+        "添加", "标签", "分类", "收支", "关联", "删除", "E2", "到"
     ]
 
     private static func trimmed(_ s: String) -> String {
@@ -102,10 +133,18 @@ public struct PaymentTemplateParser: Sendable {
         if t.isEmpty { return true }
         if t == "闪购" { return true }
         if t.count <= 2 && t.range(of: #"^\d+$"#, options: .regularExpression) != nil { return true }
+        if t.count <= 4 && t.range(of: #"^[0-9]{1,3}[）)]?$"#, options: .regularExpression) != nil { return true }
         if t.count <= 4 && t.range(of: #"^[：！!…·•:：\dA-Za-z]+$"#, options: .regularExpression) != nil { return true }
         if t.range(of: #"^[0-9]{1,2}:[0-9]{2}$"#, options: .regularExpression) != nil { return true }
         if t.contains("：") || t.contains("！") || t.hasSuffix("＞") || t.hasSuffix(">") { return true }
         return labelKeywords.contains { t.contains($0) }
+    }
+
+    private static func strippingTrailingChevron(_ s: String) -> String {
+        trimmed(s)
+            .replacingOccurrences(of: "＞", with: "")
+            .replacingOccurrences(of: ">", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     static func extractAmount(from lines: [String]) -> (value: Decimal, index: Int)? {
@@ -143,7 +182,11 @@ public struct PaymentTemplateParser: Sendable {
             }
             if repayIndex + 1 < lines.count {
                 let next = trimmed(lines[repayIndex + 1])
-                if !next.isEmpty && !isLabelish(next) { return next }
+                let amountPattern = #"^[-+]?[¥￥]?[0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2}$"#
+                if next.range(of: amountPattern, options: .regularExpression) == nil,
+                   !next.isEmpty, !isLabelish(next) {
+                    return next
+                }
             }
             return repayLine
         }
@@ -151,15 +194,16 @@ public struct PaymentTemplateParser: Sendable {
         // 微信：金额下方第一个非标签行
         if platform == .wechat {
             for j in (amountIndex + 1)..<min(amountIndex + 6, lines.count) {
-                let t = trimmed(lines[j])
-                if t.contains("当前状态") || t.contains("支付成功") || t.contains("交易成功") { break }
+                let raw = trimmed(lines[j])
+                if raw.contains("当前状态") || raw.contains("支付成功") || raw.contains("交易成功") { break }
+                let t = strippingTrailingChevron(raw)
                 if !isLabelish(t) { return t }
             }
         }
 
         // 通用：金额上方最近的非标签行
         for line in lines[..<amountIndex].reversed() {
-            let t = trimmed(line)
+            let t = strippingTrailingChevron(line)
             if !isLabelish(t) { return t }
         }
         return nil
@@ -175,16 +219,39 @@ public struct PaymentTemplateParser: Sendable {
         return nil
     }
 
-    static func extractStatus(from lines: [String]) -> String? {
+    static func extractStatus(from lines: [String], platform: PaymentRecord.Platform) -> String? {
         for line in lines {
             if line.contains("支付成功") || line.contains("交易成功") || line.contains("还款成功") {
                 return trimmed(line)
             }
         }
+        // 云闪付：状态为"交易类别"的值（消费/入账/转账）
+        if platform == .unionpay,
+           let labelIndex = lines.firstIndex(where: { $0.contains("交易类别") }) {
+            for j in (labelIndex + 1)..<lines.count {
+                let t = trimmed(lines[j])
+                if ["消费", "入账", "转账"].contains(t) {
+                    return t
+                }
+            }
+        }
         return nil
     }
 
-    static func extractTransactionId(from lines: [String]) -> String? {
+    static func extractTransactionId(from lines: [String], platform: PaymentRecord.Platform) -> String? {
+        // 云闪付：参考号是最后一个纯数字长串（商户编号/终端号等在前）
+        if platform == .unionpay {
+            let pattern = #"^[0-9]{10,}$"#
+            var last: String?
+            for line in lines {
+                let t = trimmed(line)
+                if t.range(of: pattern, options: .regularExpression) != nil {
+                    last = t
+                }
+            }
+            return last
+        }
+
         let labels = ["交易单号", "转账单号", "订单号"]
         for (i, line) in lines.enumerated() {
             guard labels.contains(where: { line.contains($0) }) else { continue }
