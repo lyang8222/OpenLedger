@@ -225,29 +225,45 @@ struct CaptureView: View {
             )
 
             Circle()
-                .fill(Color.cyan.opacity(0.16))
+                .fill(Color.cyan.opacity(0.24))
                 .blur(radius: 70)
                 .frame(width: 320, height: 320)
                 .offset(
-                    x: backgroundAnimate ? 175 : -150,
-                    y: backgroundAnimate ? -235 : -300
+                    x: backgroundAnimate ? 230 : -170,
+                    y: backgroundAnimate ? -170 : -320
                 )
+                .scaleEffect(backgroundAnimate ? 1.2 : 0.85)
                 .animation(
-                    .easeInOut(duration: 9)
+                    .easeInOut(duration: 6)
                         .repeatForever(autoreverses: true),
                     value: backgroundAnimate
                 )
 
             Circle()
-                .fill(Color.indigo.opacity(0.14))
+                .fill(Color.indigo.opacity(0.22))
                 .blur(radius: 80)
                 .frame(width: 340, height: 340)
                 .offset(
-                    x: backgroundAnimate ? -185 : 160,
-                    y: backgroundAnimate ? 265 : 320
+                    x: backgroundAnimate ? -240 : 180,
+                    y: backgroundAnimate ? 230 : 350
+                )
+                .scaleEffect(backgroundAnimate ? 0.85 : 1.2)
+                .animation(
+                    .easeInOut(duration: 7.5)
+                        .repeatForever(autoreverses: true),
+                    value: backgroundAnimate
+                )
+
+            Circle()
+                .fill(Color.pink.opacity(0.16))
+                .blur(radius: 90)
+                .frame(width: 280, height: 280)
+                .offset(
+                    x: backgroundAnimate ? -220 : 240,
+                    y: backgroundAnimate ? 60 : -40
                 )
                 .animation(
-                    .easeInOut(duration: 11)
+                    .easeInOut(duration: 8)
                         .repeatForever(autoreverses: true),
                     value: backgroundAnimate
                 )
