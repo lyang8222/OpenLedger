@@ -86,6 +86,18 @@ struct SettingsView: View {
                     }
                 }
 
+                Section {
+                    Picker("图表类型", selection: $chartTypeRaw) {
+                        ForEach(LedgerChartType.allCases) { type in
+                            Text(type.label).tag(type.rawValue)
+                        }
+                    }
+                } header: {
+                    Text("账单图表")
+                } footer: {
+                    Text("账单页顶部收支图表的显示样式")
+                }
+
                     Section("本地存储") {
                     LabeledContent("账单数量", value: "\(records.count)")
                     LabeledContent("多端同步", value: "仅隔空投送")
@@ -146,13 +158,6 @@ struct SettingsView: View {
                     .onChange(of: showAmountsInNotifications) { _, _ in refreshReminders() }
                 }
 
-                Section("账单图表") {
-                    Picker("图表类型", selection: $chartTypeRaw) {
-                        ForEach(LedgerChartType.allCases) { type in
-                            Text(type.label).tag(type.rawValue)
-                        }
-                    }
-                }
             }
             .scrollContentBackground(.hidden)
             .navigationTitle("设置")
