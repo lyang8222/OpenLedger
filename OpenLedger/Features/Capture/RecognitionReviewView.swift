@@ -43,7 +43,7 @@ struct RecognitionReviewView: View {
                     }
                 }
             }
-            .navigationTitle("确认账单")
+            .navigationTitle("确认收支")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

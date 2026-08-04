@@ -728,6 +728,40 @@ func testChartDataBuilder() {
 }
 
 @MainActor
+func testSubscriptionDetector() {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+
+    func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 10))!
+    }
+
+    let records = [
+        PaymentRecord(amount: Decimal(string: "-19.00")!, merchant: "视频会员", paidAt: date(2026, 8, 1)),
+        PaymentRecord(amount: Decimal(string: "-19.00")!, merchant: "视频会员", paidAt: date(2026, 9, 1)),
+        PaymentRecord(amount: Decimal(string: "-19.00")!, merchant: "视频会员", paidAt: date(2026, 10, 1)),
+        PaymentRecord(amount: Decimal(string: "-6.00")!, merchant: "早餐店", paidAt: date(2026, 9, 1)),
+        PaymentRecord(amount: Decimal(string: "-12.00")!, merchant: "早餐店", paidAt: date(2026, 9, 8))
+    ]
+
+    let subs = SubscriptionDetector().detect(records: records, calendar: calendar)
+    expectEqual(subs.count, 1, "订阅检测：数量")
+    expectEqual(subs[0].merchant, "视频会员", "订阅检测：商户")
+    expectEqual(subs[0].cadence, .monthly, "订阅检测：周期")
+    expectEqual(subs[0].occurrences, 3, "订阅检测：次数")
+    expectEqual(subs[0].nextDueDate, date(2026, 11, 1), "订阅检测：下次扣款")
+
+    let weekly = [
+        PaymentRecord(amount: Decimal(string: "-10.00")!, merchant: "健身房", paidAt: date(2026, 9, 1)),
+        PaymentRecord(amount: Decimal(string: "-10.00")!, merchant: "健身房", paidAt: date(2026, 9, 8)),
+        PaymentRecord(amount: Decimal(string: "-10.00")!, merchant: "健身房", paidAt: date(2026, 9, 15))
+    ]
+    let weeklySubs = SubscriptionDetector().detect(records: weekly, calendar: calendar)
+    expectEqual(weeklySubs.count, 1, "订阅检测：周付")
+    expectEqual(weeklySubs[0].cadence, .weekly, "订阅检测：周付周期")
+}
+
+@MainActor
 func validateRealBills(csvPath: String, xlsxPath: String, zipPath: String?) {
     print("\n===== 真实账单验证 =====")
     do {
@@ -793,6 +827,7 @@ testReconciliation()
 testEncryptedZip()
 testBillSummaryBuilder()
 testChartDataBuilder()
+testSubscriptionDetector()
 
 if CommandLine.arguments.count >= 3 {
     validateRealBills(

@@ -24,16 +24,28 @@ struct LedgerChartView: View {
     let summaries: [MonthlySummary]
     let chartType: LedgerChartType
 
+    @State private var selectedMonth: Date?
+    @State private var selectedAngle: Double?
+
     var body: some View {
-        Group {
-            switch chartType {
-            case .bar: barChart
-            case .pie: pieChart
-            case .line: lineChart
-            case .area: areaChart
+        VStack(spacing: 8) {
+            if let info = selectionInfo {
+                Text(info)
+                    .font(.footnote.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
+
+            Group {
+                switch chartType {
+                case .bar: barChart
+                case .pie: pieChart
+                case .line: lineChart
+                case .area: areaChart
+                }
+            }
+            .frame(height: 165)
         }
-        .frame(height: 190)
         .padding(12)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay {
@@ -43,27 +55,66 @@ struct LedgerChartView: View {
         .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18))
     }
 
-    private var barChart: some View {
-        Chart {
-            ForEach(summaries) { summary in
-                BarMark(
-                    x: .value("月份", summary.month, unit: .month),
-                    y: .value("金额", summary.expense)
-                )
-                .position(by: .value("类别", "支出"))
-                .foregroundStyle(by: .value("类别", "支出"))
+    // MARK: - 选中信息
 
-                BarMark(
-                    x: .value("月份", summary.month, unit: .month),
-                    y: .value("金额", summary.income)
-                )
-                .position(by: .value("类别", "收入"))
-                .foregroundStyle(by: .value("类别", "收入"))
+    private var selectionInfo: String? {
+        switch chartType {
+        case .pie:
+            return pieSelectionInfo
+        default:
+            guard let selectedMonth,
+                  let summary = summaries.first(where: { $0.month == selectedMonth }) else {
+                return nil
             }
+            let month = selectedMonth.formatted(.dateTime.month())
+            return "\(month) · 支出 ¥\(Self.amountText(summary.expense)) · 收入 ¥\(Self.amountText(summary.income))"
         }
+    }
+
+    private var pieSelectionInfo: String? {
+        guard let angle = selectedAngle, let current = summaries.last else { return nil }
+        let total = current.expense + current.income
+        guard total > 0 else { return nil }
+        let expenseFraction = NSDecimalNumber(decimal: current.expense).doubleValue
+            / NSDecimalNumber(decimal: total).doubleValue
+        return angle < expenseFraction * 360
+            ? "本月支出 ¥\(Self.amountText(current.expense))"
+            : "本月收入 ¥\(Self.amountText(current.income))"
+    }
+
+    // MARK: - 条形图
+
+    private struct BarItem: Identifiable {
+        let id = UUID()
+        let month: Date
+        let amount: Decimal
+        let category: String
+    }
+
+    private var barItems: [BarItem] {
+        summaries.flatMap { summary in
+            [
+                BarItem(month: summary.month, amount: summary.expense, category: "支出"),
+                BarItem(month: summary.month, amount: summary.income, category: "收入")
+            ]
+        }
+    }
+
+    private var barChart: some View {
+        Chart(barItems) { item in
+            BarMark(
+                x: .value("月份", item.month, unit: .month),
+                y: .value("金额", item.amount)
+            )
+            .position(by: .value("类别", item.category))
+            .foregroundStyle(by: .value("类别", item.category))
+        }
+        .chartXSelection(value: $selectedMonth)
         .chartForegroundStyleScale(["支出": Color.orange, "收入": Color.green])
         .chartLegend(position: .bottom)
     }
+
+    // MARK: - 饼图
 
     @ViewBuilder
     private var pieChart: some View {
@@ -84,6 +135,7 @@ struct LedgerChartView: View {
                     angularInset: 2
                 )
                 .foregroundStyle(by: .value("类别", "支出"))
+                .cornerRadius(4)
 
                 SectorMark(
                     angle: .value("金额", income),
@@ -91,11 +143,15 @@ struct LedgerChartView: View {
                     angularInset: 2
                 )
                 .foregroundStyle(by: .value("类别", "收入"))
+                .cornerRadius(4)
             }
+            .chartAngleSelection(value: $selectedAngle)
             .chartForegroundStyleScale(["支出": Color.orange, "收入": Color.green])
             .chartLegend(position: .bottom)
         }
     }
+
+    // MARK: - 折线图 / 曲线图
 
     private var lineChart: some View {
         Chart(summaries) { summary in
@@ -107,6 +163,7 @@ struct LedgerChartView: View {
             .foregroundStyle(.blue)
             .symbol(.circle)
         }
+        .chartXSelection(value: $selectedMonth)
     }
 
     private var areaChart: some View {
@@ -134,5 +191,10 @@ struct LedgerChartView: View {
             .foregroundStyle(.blue)
             .symbol(.circle)
         }
+        .chartXSelection(value: $selectedMonth)
+    }
+
+    private static func amountText(_ amount: Decimal) -> String {
+        LedgerFormatters.string(from: amount)
     }
 }

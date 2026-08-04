@@ -20,11 +20,11 @@ struct RootView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("记账", systemImage: "plus.circle.fill", value: AppTab.capture) {
+            Tab("记录", systemImage: "plus.circle.fill", value: AppTab.capture) {
                 CaptureView(onSaved: handleSaved)
             }
 
-            Tab("账单", systemImage: "list.bullet.rectangle", value: AppTab.ledger) {
+            Tab("收支", systemImage: "list.bullet.rectangle", value: AppTab.ledger) {
                 LedgerView(
                     highlightRecordID: highlightRecordID,
                     onGoCapture: {
@@ -63,12 +63,14 @@ struct RootView: View {
                 appLock.lockIfEnabled()
             }
             await ReminderService.refreshSummaries(records: records)
+            await SubscriptionService.refreshNotifications(records: records)
             WidgetSummarySnapshot.update(records: records.map { $0.toCoreRecord() })
             WidgetCenter.shared.reloadAllTimelines()
         }
         .onChange(of: records.count) { _, _ in
             Task {
                 await ReminderService.refreshSummaries(records: records)
+                await SubscriptionService.refreshNotifications(records: records)
                 WidgetSummarySnapshot.update(records: records.map { $0.toCoreRecord() })
                 WidgetCenter.shared.reloadAllTimelines()
             }

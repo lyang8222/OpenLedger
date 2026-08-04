@@ -65,6 +65,7 @@ struct CaptureView: View {
     @State private var showReconciliation = false
     @State private var showScreenshotPrompt = false
     @State private var backgroundAnimate = false
+    @State private var showManualEntry = false
 
     private let pipeline = RecognitionPipeline()
     private let crypto = CryptoService()
@@ -145,6 +146,14 @@ struct CaptureView: View {
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
 
+                        Button {
+                            showManualEntry = true
+                        } label: {
+                            Label("识别不了？手动记账", systemImage: "square.and.pencil")
+                                .font(.footnote)
+                        }
+                        .padding(.top, 4)
+
                         Spacer()
                     }
                 }
@@ -201,6 +210,11 @@ struct CaptureView: View {
             }
             .sheet(isPresented: $showReconciliation) {
                 ReconciliationView()
+            }
+            .sheet(isPresented: $showManualEntry) {
+                ManualEntryView { draft in
+                    save(draft)
+                }
             }
             .overlay {
                 if isProcessing {

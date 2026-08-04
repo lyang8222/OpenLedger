@@ -25,6 +25,7 @@ struct SettingsView: View {
     @State private var importedData: Data?
     @State private var message: String?
     @State private var showReconciliation = false
+    @State private var showSubscriptions = false
 
     let appLock: AppLockService
 
@@ -38,6 +39,7 @@ struct SettingsView: View {
     @AppStorage(ReminderKeys.weeklyWeekday) private var weeklyWeekday = 2
     @AppStorage(ReminderKeys.showAmounts) private var showAmountsInNotifications = false
     @AppStorage("chart.type") private var chartTypeRaw = LedgerChartType.bar.rawValue
+    @AppStorage("subscription.enabled") private var subscriptionReminderEnabled = true
 
     var body: some View {
         NavigationStack {
@@ -93,9 +95,9 @@ struct SettingsView: View {
                         }
                     }
                 } header: {
-                    Text("账单图表")
+                    Text("收支图表")
                 } footer: {
-                    Text("账单页顶部收支图表的显示样式")
+                    Text("收支页顶部图表的显示样式")
                 }
 
                     Section("本地存储") {
@@ -149,6 +151,13 @@ struct SettingsView: View {
                             }
                         }
 
+                        Toggle("订阅到期提醒", isOn: $subscriptionReminderEnabled)
+                            .onChange(of: subscriptionReminderEnabled) { _, _ in refreshReminders() }
+
+                        Button("查看检测到的订阅") {
+                            showSubscriptions = true
+                        }
+
                         Text("汇总在打开 App 或新增账单时刷新；长时间未打开可能显示最近一次的数据。")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -169,6 +178,9 @@ struct SettingsView: View {
             .navigationTitle("设置")
             .sheet(isPresented: $showReconciliation) {
                 ReconciliationView()
+            }
+            .sheet(isPresented: $showSubscriptions) {
+                SubscriptionListView()
             }
             .alert(
                 "输入备份口令",
@@ -281,6 +293,7 @@ struct SettingsView: View {
     private func refreshReminders() {
         Task {
             await ReminderService.refreshSummaries(records: records)
+            await SubscriptionService.refreshNotifications(records: records)
         }
     }
 

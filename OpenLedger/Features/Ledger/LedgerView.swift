@@ -10,6 +10,7 @@ struct LedgerView: View {
     let highlightRecordID: UUID?
     var onGoCapture: (() -> Void)?
     @AppStorage("chart.type") private var chartTypeRaw = LedgerChartType.bar.rawValue
+    @State private var shareRecord: PaymentRecordModel?
 
     init(
         highlightRecordID: UUID? = nil,
@@ -28,7 +29,7 @@ struct LedgerView: View {
                 Group {
                     if records.isEmpty {
                         GlassEmptyState(
-                            title: "还没有账单",
+                            title: "还没有收支记录",
                             message: "导入第一张支付截图，快速统计你的收支",
                             systemImage: "tray",
                             actionTitle: "去记账",
@@ -53,6 +54,13 @@ struct LedgerView: View {
 
                             ForEach(records) { record in
                                 row(record)
+                                    .contextMenu {
+                                        Button {
+                                            shareRecord = record
+                                        } label: {
+                                            Label("生成脱敏分享卡", systemImage: "square.and.arrow.up")
+                                        }
+                                    }
                             }
                             .onDelete(perform: delete)
                         }
@@ -60,7 +68,10 @@ struct LedgerView: View {
                     }
                 }
             }
-            .navigationTitle("账单")
+            .navigationTitle("收支")
+            .sheet(item: $shareRecord) { record in
+                RedactedShareSheet(record: record)
+            }
         }
     }
 

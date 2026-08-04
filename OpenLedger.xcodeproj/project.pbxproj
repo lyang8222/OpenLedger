@@ -13,6 +13,7 @@
 		000000000000000000000204 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000104 /* CaptureView.swift */; };
 		000000000000000000000205 /* RecognitionReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000105 /* RecognitionReviewView.swift */; };
 		000000000000000000000206 /* LedgerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000106 /* LedgerView.swift */; };
+		00000000000000000000021D /* LedgerChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000011D /* LedgerChartView.swift */; };
 		000000000000000000000207 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000107 /* SettingsView.swift */; };
 		000000000000000000000208 /* MainCaptureButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000108 /* MainCaptureButton.swift */; };
 		000000000000000000000209 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000109 /* CameraPicker.swift */; };
@@ -25,6 +26,10 @@
 		000000000000000000000213 /* ReminderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000113 /* ReminderService.swift */; };
 		000000000000000000000214 /* StatusViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000114 /* StatusViews.swift */; };
 		00000000000000000000021C /* NotificationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000011C /* NotificationDelegate.swift */; };
+		00000000000000000000021E /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000011E /* SubscriptionService.swift */; };
+		00000000000000000000021F /* ManualEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000011F /* ManualEntryView.swift */; };
+		000000000000000000000220 /* SubscriptionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000120 /* SubscriptionListView.swift */; };
+		000000000000000000000221 /* RedactedShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000121 /* RedactedShareCardView.swift */; };
 		000000000000000000000215 /* OpenLedgerWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000115 /* OpenLedgerWidgetBundle.swift */; };
 		000000000000000000000216 /* SummaryWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000116 /* SummaryWidget.swift */; };
 		000000000000000000000217 /* WidgetSummaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000119 /* WidgetSummaryStore.swift */; };
@@ -72,6 +77,7 @@
 		000000000000000000000104 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
 		000000000000000000000105 /* RecognitionReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionReviewView.swift; sourceTree = "<group>"; };
 		000000000000000000000106 /* LedgerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerView.swift; sourceTree = "<group>"; };
+		00000000000000000000011D /* LedgerChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerChartView.swift; sourceTree = "<group>"; };
 		000000000000000000000107 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		000000000000000000000108 /* MainCaptureButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainCaptureButton.swift; sourceTree = "<group>"; };
 		000000000000000000000109 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
@@ -87,6 +93,10 @@
 		000000000000000000000113 /* ReminderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderService.swift; sourceTree = "<group>"; };
 		000000000000000000000114 /* StatusViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusViews.swift; sourceTree = "<group>"; };
 		00000000000000000000011C /* NotificationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationDelegate.swift; sourceTree = "<group>"; };
+		00000000000000000000011E /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
+		00000000000000000000011F /* ManualEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualEntryView.swift; sourceTree = "<group>"; };
+		000000000000000000000120 /* SubscriptionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionListView.swift; sourceTree = "<group>"; };
+		000000000000000000000121 /* RedactedShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedactedShareCardView.swift; sourceTree = "<group>"; };
 		000000000000000000000115 /* OpenLedgerWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLedgerWidgetBundle.swift; sourceTree = "<group>"; };
 		000000000000000000000116 /* SummaryWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -200,6 +210,7 @@
 			children = (
 				000000000000000000000104 /* CaptureView.swift */,
 				000000000000000000000105 /* RecognitionReviewView.swift */,
+				00000000000000000000011F /* ManualEntryView.swift */,
 			);
 			path = Capture;
 			sourceTree = "<group>";
@@ -208,6 +219,8 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000106 /* LedgerView.swift */,
+				00000000000000000000011D /* LedgerChartView.swift */,
+				000000000000000000000121 /* RedactedShareCardView.swift */,
 			);
 			path = Ledger;
 			sourceTree = "<group>";
@@ -216,6 +229,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000107 /* SettingsView.swift */,
+				000000000000000000000120 /* SubscriptionListView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -262,6 +276,7 @@
 				000000000000000000000111 /* AppLockService.swift */,
 				000000000000000000000113 /* ReminderService.swift */,
 				00000000000000000000011C /* NotificationDelegate.swift */,
+				00000000000000000000011E /* SubscriptionService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -438,6 +453,7 @@
 				000000000000000000000204 /* CaptureView.swift in Sources */,
 				000000000000000000000205 /* RecognitionReviewView.swift in Sources */,
 				000000000000000000000206 /* LedgerView.swift in Sources */,
+				00000000000000000000021D /* LedgerChartView.swift in Sources */,
 				000000000000000000000207 /* SettingsView.swift in Sources */,
 				000000000000000000000208 /* MainCaptureButton.swift in Sources */,
 				000000000000000000000209 /* CameraPicker.swift in Sources */,
@@ -448,6 +464,10 @@
 				000000000000000000000213 /* ReminderService.swift in Sources */,
 				000000000000000000000214 /* StatusViews.swift in Sources */,
 				00000000000000000000021C /* NotificationDelegate.swift in Sources */,
+				00000000000000000000021E /* SubscriptionService.swift in Sources */,
+				00000000000000000000021F /* ManualEntryView.swift in Sources */,
+				000000000000000000000220 /* SubscriptionListView.swift in Sources */,
+				000000000000000000000221 /* RedactedShareCardView.swift in Sources */,
 				000000000000000000000218 /* WidgetSummaryStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
