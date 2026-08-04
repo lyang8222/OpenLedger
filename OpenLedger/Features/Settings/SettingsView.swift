@@ -145,7 +145,6 @@ struct SettingsView: View {
                 .onChange(of: weeklyWeekday) { _, _ in refreshReminders() }
                     .onChange(of: showAmountsInNotifications) { _, _ in refreshReminders() }
                 }
-                .scrollContentBackground(.hidden)
 
                 Section("账单图表") {
                     Picker("图表类型", selection: $chartTypeRaw) {
@@ -155,6 +154,7 @@ struct SettingsView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("设置")
             .sheet(isPresented: $showReconciliation) {
                 ReconciliationView()

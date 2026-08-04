@@ -50,12 +50,14 @@ struct LedgerChartView: View {
                     x: .value("月份", summary.month, unit: .month),
                     y: .value("金额", summary.expense)
                 )
+                .position(by: .value("类别", "支出"))
                 .foregroundStyle(by: .value("类别", "支出"))
 
                 BarMark(
                     x: .value("月份", summary.month, unit: .month),
                     y: .value("金额", summary.income)
                 )
+                .position(by: .value("类别", "收入"))
                 .foregroundStyle(by: .value("类别", "收入"))
             }
         }
@@ -63,28 +65,36 @@ struct LedgerChartView: View {
         .chartLegend(position: .bottom)
     }
 
+    @ViewBuilder
     private var pieChart: some View {
         let current = summaries.last
         let expense = current?.expense ?? 0
         let income = current?.income ?? 0
 
-        return Chart {
-            SectorMark(
-                angle: .value("金额", expense),
-                innerRadius: .ratio(0.62),
-                angularInset: 2
-            )
-            .foregroundStyle(by: .value("类别", "支出"))
+        if expense == 0 && income == 0 {
+            Text("本月暂无收支记录")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            Chart {
+                SectorMark(
+                    angle: .value("金额", expense),
+                    innerRadius: .ratio(0.62),
+                    angularInset: 2
+                )
+                .foregroundStyle(by: .value("类别", "支出"))
 
-            SectorMark(
-                angle: .value("金额", income),
-                innerRadius: .ratio(0.62),
-                angularInset: 2
-            )
-            .foregroundStyle(by: .value("类别", "收入"))
+                SectorMark(
+                    angle: .value("金额", income),
+                    innerRadius: .ratio(0.62),
+                    angularInset: 2
+                )
+                .foregroundStyle(by: .value("类别", "收入"))
+            }
+            .chartForegroundStyleScale(["支出": Color.orange, "收入": Color.green])
+            .chartLegend(position: .bottom)
         }
-        .chartForegroundStyleScale(["支出": Color.orange, "收入": Color.green])
-        .chartLegend(position: .bottom)
     }
 
     private var lineChart: some View {
