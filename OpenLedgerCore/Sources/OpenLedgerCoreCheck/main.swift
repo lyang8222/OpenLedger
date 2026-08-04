@@ -797,6 +797,32 @@ func testCategoryClassifier() {
 }
 
 @MainActor
+func testCategorySummaries() {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+    let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 15, hour: 10))!
+
+    func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 9))!
+    }
+
+    let records = [
+        PaymentRecord(amount: Decimal(string: "-30.00")!, merchant: "星巴克咖啡", paidAt: date(2026, 8, 3)),
+        PaymentRecord(amount: Decimal(string: "-20.00")!, merchant: "汉堡王", paidAt: date(2026, 8, 5)),
+        PaymentRecord(amount: Decimal(string: "-200.00")!, merchant: "中国石化加油站", paidAt: date(2026, 8, 8)),
+        PaymentRecord(amount: Decimal(string: "5000.00")!, merchant: "工资", paidAt: date(2026, 8, 1)),
+        PaymentRecord(amount: Decimal(string: "-50.00")!, merchant: "星巴克咖啡", paidAt: date(2026, 7, 20))
+    ]
+
+    let summaries = ChartDataBuilder().categorySummaries(records: records, now: now, calendar: calendar)
+    expectEqual(summaries.count, 2, "分类统计：分类数量")
+    expectEqual(summaries[0].category, .transport, "分类统计：金额最多在前")
+    expectEqual(summaries[0].amount, Decimal(string: "200.00"), "分类统计：交通金额")
+    expectEqual(summaries[1].category, .dining, "分类统计：餐饮")
+    expectEqual(summaries[1].count, 2, "分类统计：餐饮笔数")
+}
+
+@MainActor
 func validateRealBills(csvPath: String, xlsxPath: String, zipPath: String?) {
     print("\n===== 真实账单验证 =====")
     do {
@@ -864,6 +890,7 @@ testBillSummaryBuilder()
 testChartDataBuilder()
 testSubscriptionDetector()
 testCategoryClassifier()
+testCategorySummaries()
 
 if CommandLine.arguments.count >= 3 {
     validateRealBills(

@@ -33,4 +33,27 @@ final class ChartDataBuilderTests: XCTestCase {
         XCTAssertEqual(summaries[4].expense, Decimal(string: "30.00"))
         XCTAssertEqual(summaries[0].expense, Decimal.zero)
     }
+
+    func testCategorySummaries() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let now = calendar.date(from: DateComponents(year: 2026, month: 8, day: 15, hour: 10))!
+
+        func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+            calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 9))!
+        }
+
+        let records = [
+            PaymentRecord(amount: Decimal(string: "-30.00")!, merchant: "星巴克咖啡", paidAt: date(2026, 8, 3)),
+            PaymentRecord(amount: Decimal(string: "-20.00")!, merchant: "汉堡王", paidAt: date(2026, 8, 5)),
+            PaymentRecord(amount: Decimal(string: "-200.00")!, merchant: "中国石化加油站", paidAt: date(2026, 8, 8)),
+            PaymentRecord(amount: Decimal(string: "5000.00")!, merchant: "工资", paidAt: date(2026, 8, 1))
+        ]
+
+        let summaries = ChartDataBuilder().categorySummaries(records: records, now: now, calendar: calendar)
+        XCTAssertEqual(summaries.count, 2)
+        XCTAssertEqual(summaries[0].category, .transport)
+        XCTAssertEqual(summaries[1].category, .dining)
+        XCTAssertEqual(summaries[1].count, 2)
+    }
 }

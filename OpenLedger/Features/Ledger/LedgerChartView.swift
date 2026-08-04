@@ -7,6 +7,7 @@ enum LedgerChartType: String, CaseIterable, Identifiable {
     case pie
     case line
     case area
+    case categoryPie
 
     var id: String { rawValue }
 
@@ -16,12 +17,14 @@ enum LedgerChartType: String, CaseIterable, Identifiable {
         case .pie: "饼图"
         case .line: "折线图"
         case .area: "曲线图"
+        case .categoryPie: "分类占比"
         }
     }
 }
 
 struct LedgerChartView: View {
     let summaries: [MonthlySummary]
+    let categorySummaries: [CategorySummary]
     let chartType: LedgerChartType
 
     @State private var selectedMonth: Date?
@@ -42,6 +45,7 @@ struct LedgerChartView: View {
                 case .pie: pieChart
                 case .line: lineChart
                 case .area: areaChart
+                case .categoryPie: categoryPieChart
                 }
             }
             .frame(height: 165)
@@ -61,6 +65,8 @@ struct LedgerChartView: View {
         switch chartType {
         case .pie:
             return pieSelectionInfo
+        case .categoryPie:
+            return categoryPieSelectionInfo
         default:
             guard let selectedMonth,
                   let summary = summaries.first(where: { $0.month == selectedMonth }) else {
@@ -80,6 +86,25 @@ struct LedgerChartView: View {
         return angle < expenseFraction * 360
             ? "本月支出 ¥\(Self.amountText(current.expense))"
             : "本月收入 ¥\(Self.amountText(current.income))"
+    }
+
+    private var categoryPieSelectionInfo: String? {
+        guard let angle = selectedAngle else { return nil }
+        let total = categorySummaries.reduce(Decimal.zero) { $0 + $1.amount }
+        guard total > 0 else { return nil }
+
+        var cumulative = Decimal.zero
+        for item in categorySummaries {
+            cumulative += item.amount
+            let endFraction = NSDecimalNumber(decimal: cumulative).doubleValue
+                / NSDecimalNumber(decimal: total).doubleValue
+            if angle < endFraction * 360 {
+                return "\(item.category.label) ¥\(Self.amountText(item.amount)) · \(item.count) 笔"
+            }
+        }
+        return categorySummaries.last.map {
+            "\($0.category.label) ¥\(Self.amountText($0.amount)) · \($0.count) 笔"
+        }
     }
 
     // MARK: - 条形图
@@ -149,6 +174,46 @@ struct LedgerChartView: View {
             .chartForegroundStyleScale(["支出": Color.orange, "收入": Color.green])
             .chartLegend(position: .bottom)
         }
+    }
+
+    // MARK: - 分类占比饼图
+
+    @ViewBuilder
+    private var categoryPieChart: some View {
+        if categorySummaries.isEmpty {
+            Text("本月暂无支出分类数据")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            Chart(categorySummaries) { item in
+                SectorMark(
+                    angle: .value("金额", item.amount),
+                    innerRadius: .ratio(0.6),
+                    angularInset: 2
+                )
+                .foregroundStyle(by: .value("分类", item.category.label))
+                .cornerRadius(4)
+            }
+            .chartAngleSelection(value: $selectedAngle)
+            .chartForegroundStyleScale(categoryColorPairs)
+            .chartLegend(position: .bottom)
+        }
+    }
+
+    private var categoryColorPairs: KeyValuePairs<String, Color> {
+        [
+            "餐饮": .orange,
+            "交通": .green,
+            "购物": .blue,
+            "娱乐": .purple,
+            "医疗": .red,
+            "居住": .teal,
+            "教育": .yellow,
+            "转账": .indigo,
+            "收入": .pink,
+            "其他": .gray
+        ]
     }
 
     // MARK: - 折线图 / 曲线图

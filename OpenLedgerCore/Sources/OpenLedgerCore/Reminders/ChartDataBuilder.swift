@@ -14,6 +14,20 @@ public struct MonthlySummary: Identifiable, Sendable {
     }
 }
 
+public struct CategorySummary: Identifiable, Sendable {
+    public let category: ExpenseCategory
+    public let amount: Decimal
+    public let count: Int
+
+    public var id: String { category.rawValue }
+
+    public init(category: ExpenseCategory, amount: Decimal, count: Int) {
+        self.category = category
+        self.amount = amount
+        self.count = count
+    }
+}
+
 /// 按自然月汇总收入与支出，供账单页图表使用。
 public struct ChartDataBuilder: Sendable {
     public init() {}
@@ -53,5 +67,39 @@ public struct ChartDataBuilder: Sendable {
             summaries.append(MonthlySummary(month: monthStart, income: income, expense: expense))
         }
         return summaries
+    }
+
+    /// 按分类汇总本月支出（收入不计入），供分类占比图使用。
+    public func categorySummaries(
+        records: [PaymentRecord],
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> [CategorySummary] {
+        let month = calendar.date(from: calendar.dateComponents([.year, .month], from: now))
+            ?? calendar.startOfDay(for: now)
+        let nextMonth = calendar.date(byAdding: .month, value: 1, to: month) ?? month
+
+        var map: [ExpenseCategory: (amount: Decimal, count: Int)] = [:]
+        let classifier = CategoryClassifier()
+
+        for record in records {
+            guard let paidAt = record.paidAt,
+                  record.amount < 0,
+                  paidAt >= month,
+                  paidAt < nextMonth else {
+                continue
+            }
+            let category = classifier.classify(
+                merchant: record.merchant,
+                itemDescription: nil,
+                amount: record.amount
+            )
+            let current = map[category] ?? (.zero, 0)
+            map[category] = (current.amount + abs(record.amount), current.count + 1)
+        }
+
+        return map
+            .map { CategorySummary(category: $0.key, amount: $0.value.amount, count: $0.value.count) }
+            .sorted { $0.amount > $1.amount }
     }
 }

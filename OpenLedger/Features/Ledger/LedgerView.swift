@@ -38,17 +38,26 @@ struct LedgerView: View {
                     } else {
                         List {
                             if !records.isEmpty {
+                                let chartType = LedgerChartType(rawValue: chartTypeRaw) ?? .bar
+                                let coreRecords = records.map { $0.toCoreRecord() }
                                 Section {
                                     LedgerChartView(
                                         summaries: ChartDataBuilder().monthlySummaries(
-                                            records: records.map { $0.toCoreRecord() },
+                                            records: coreRecords,
                                             months: 6
                                         ),
-                                        chartType: LedgerChartType(rawValue: chartTypeRaw) ?? .bar
+                                        categorySummaries: ChartDataBuilder().categorySummaries(
+                                            records: coreRecords
+                                        ),
+                                        chartType: chartType
                                     )
                                     .listRowBackground(Color.clear)
                                 } header: {
-                                    Text("收支概况（近 6 个月）")
+                                    Text(
+                                        chartType == .bar || chartType == .line || chartType == .area
+                                            ? "收支概况（近 6 个月）"
+                                            : "本月收支概况"
+                                    )
                                 }
                             }
 
