@@ -48,6 +48,7 @@ enum ScreenshotPromptService {
 struct CaptureView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var records: [PaymentRecordModel]
 
     @State private var showSourceMenu = false
@@ -63,6 +64,7 @@ struct CaptureView: View {
     @State private var showMissingBanner = true
     @State private var showReconciliation = false
     @State private var showScreenshotPrompt = false
+    @State private var backgroundAnimate = false
 
     private let pipeline = RecognitionPipeline()
     private let crypto = CryptoService()
@@ -187,6 +189,9 @@ struct CaptureView: View {
                     showScreenshotPrompt = true
                 }
             }
+            .onAppear {
+                backgroundAnimate = !reduceMotion
+            }
             .sheet(isPresented: $showReview) {
                 if let draft {
                     RecognitionReviewView(draft: draft) { updated in
@@ -223,13 +228,29 @@ struct CaptureView: View {
                 .fill(Color.cyan.opacity(0.16))
                 .blur(radius: 70)
                 .frame(width: 320, height: 320)
-                .offset(x: -150, y: -280)
+                .offset(
+                    x: backgroundAnimate ? 175 : -150,
+                    y: backgroundAnimate ? -235 : -300
+                )
+                .animation(
+                    .easeInOut(duration: 9)
+                        .repeatForever(autoreverses: true),
+                    value: backgroundAnimate
+                )
 
             Circle()
                 .fill(Color.indigo.opacity(0.14))
                 .blur(radius: 80)
                 .frame(width: 340, height: 340)
-                .offset(x: 160, y: 300)
+                .offset(
+                    x: backgroundAnimate ? -185 : 160,
+                    y: backgroundAnimate ? 265 : 320
+                )
+                .animation(
+                    .easeInOut(duration: 11)
+                        .repeatForever(autoreverses: true),
+                    value: backgroundAnimate
+                )
         }
     }
 
