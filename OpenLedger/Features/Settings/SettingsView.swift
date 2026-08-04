@@ -143,6 +143,12 @@ struct SettingsView: View {
 
                         Toggle("通知显示金额", isOn: $showAmountsInNotifications)
 
+                        Button("查看已排程提醒") {
+                            Task {
+                                message = await ReminderService.pendingSummary()
+                            }
+                        }
+
                         Text("汇总在打开 App 或新增账单时刷新；长时间未打开可能显示最近一次的数据。")
                             .font(.footnote)
                             .foregroundStyle(.secondary)

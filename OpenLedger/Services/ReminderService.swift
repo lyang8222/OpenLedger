@@ -43,7 +43,8 @@ enum ReminderService {
         case .quarterly: key = ReminderKeys.quarterly
         case .yearly: key = ReminderKeys.yearly
         }
-        return UserDefaults.standard.bool(forKey: key)
+        // 未显式设置过的周期默认开启（@AppStorage 的默认值不会自动写入 UserDefaults）
+        return UserDefaults.standard.object(forKey: key) as? Bool ?? true
     }
 
     static func requestAuthorization() async -> Bool {
@@ -85,6 +86,24 @@ enum ReminderService {
     static func cancelAll() {
         UNUserNotificationCenter.current()
             .removePendingNotificationRequests(withIdentifiers: allIdentifiers)
+    }
+
+    /// 返回当前已排程的提醒摘要，用于调试。
+    static func pendingSummary() async -> String {
+        let center = UNUserNotificationCenter.current()
+        let requests = await center.pendingNotificationRequests()
+        guard !requests.isEmpty else {
+            return "当前没有已排程的提醒"
+        }
+        let lines = requests.compactMap { request -> String? in
+            guard let trigger = request.trigger as? UNCalendarNotificationTrigger else {
+                return nil
+            }
+            let next = trigger.nextTriggerDate()?
+                .formatted(date: .abbreviated, time: .shortened) ?? "未知"
+            return "\(request.identifier)：\(next)"
+        }
+        return lines.joined(separator: "\n")
     }
 
     private static var allIdentifiers: [String] {
