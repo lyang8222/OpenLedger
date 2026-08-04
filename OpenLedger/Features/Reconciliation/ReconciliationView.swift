@@ -361,7 +361,11 @@ struct ReconciliationView: View {
         return PaymentRecordModel(
             amount: entry.amount,
             merchant: entry.counterparty,
-            category: entry.category,
+            category: entry.category ?? CategoryClassifier().classify(
+                merchant: entry.counterparty,
+                itemDescription: entry.itemDescription,
+                amount: entry.amount
+            ).label,
             paidAt: entry.paidAt,
             platform: platform,
             transactionIdEncrypted: transactionIdEncrypted,

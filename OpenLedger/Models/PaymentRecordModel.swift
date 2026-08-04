@@ -75,6 +75,11 @@ final class PaymentRecordModel {
         return PaymentRecordModel(
             amount: draft.amount ?? .zero,
             merchant: draft.merchant,
+            category: CategoryClassifier().classify(
+                merchant: draft.merchant,
+                itemDescription: nil,
+                amount: draft.amount ?? .zero
+            ).label,
             paidAt: draft.paidAt,
             platform: draft.platform,
             transactionIdEncrypted: transactionIdEncrypted,

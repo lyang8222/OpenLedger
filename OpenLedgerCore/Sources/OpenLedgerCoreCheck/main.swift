@@ -762,6 +762,41 @@ func testSubscriptionDetector() {
 }
 
 @MainActor
+func testCategoryClassifier() {
+    let classifier = CategoryClassifier()
+    expectEqual(
+        classifier.classify(merchant: "星巴克咖啡", itemDescription: nil, amount: Decimal(string: "-30.00")!),
+        .dining,
+        "自动分类：餐饮"
+    )
+    expectEqual(
+        classifier.classify(merchant: "中国石化加油站", itemDescription: nil, amount: Decimal(string: "-200.00")!),
+        .transport,
+        "自动分类：交通"
+    )
+    expectEqual(
+        classifier.classify(merchant: "拼多多平台商户", itemDescription: nil, amount: Decimal(string: "-10.00")!),
+        .shopping,
+        "自动分类：购物"
+    )
+    expectEqual(
+        classifier.classify(merchant: "长春肿瘤医院", itemDescription: nil, amount: Decimal(string: "-5.00")!),
+        .health,
+        "自动分类：医疗"
+    )
+    expectEqual(
+        classifier.classify(merchant: nil, itemDescription: nil, amount: Decimal(string: "5000.00")!),
+        .income,
+        "自动分类：收入"
+    )
+    expectEqual(
+        classifier.classify(merchant: "奇怪商户名", itemDescription: nil, amount: Decimal(string: "-1.00")!),
+        .other,
+        "自动分类：其他"
+    )
+}
+
+@MainActor
 func validateRealBills(csvPath: String, xlsxPath: String, zipPath: String?) {
     print("\n===== 真实账单验证 =====")
     do {
@@ -828,6 +863,7 @@ testEncryptedZip()
 testBillSummaryBuilder()
 testChartDataBuilder()
 testSubscriptionDetector()
+testCategoryClassifier()
 
 if CommandLine.arguments.count >= 3 {
     validateRealBills(

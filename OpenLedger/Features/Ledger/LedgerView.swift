@@ -97,6 +97,11 @@ struct LedgerView: View {
 
     private func row(_ record: PaymentRecordModel) -> some View {
         let isHighlighted = record.id == highlightRecordID
+        let category = record.category ?? CategoryClassifier().classify(
+            merchant: record.merchant,
+            itemDescription: nil,
+            amount: record.amount
+        ).label
 
         return HStack(spacing: 12) {
             Image(systemName: platformIcon(record.platform))
@@ -106,9 +111,16 @@ struct LedgerView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(record.merchant ?? "未知商户")
                     .font(.body.weight(.medium))
-                Text(record.paidAt?.formatted(date: .abbreviated, time: .shortened) ?? "时间未知")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Text(category)
+                        .font(.caption2)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.thinMaterial, in: Capsule())
+                    Text(record.paidAt?.formatted(date: .abbreviated, time: .shortened) ?? "时间未知")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Spacer()
