@@ -29,7 +29,7 @@ struct LedgerView: View {
                     if records.isEmpty {
                         GlassEmptyState(
                             title: "还没有账单",
-                            message: "导入第一张支付截图，自动完成记账",
+                            message: "导入第一张支付截图，快速统计你的收支",
                             systemImage: "tray",
                             actionTitle: "去记账",
                             action: onGoCapture

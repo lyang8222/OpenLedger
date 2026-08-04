@@ -104,8 +104,8 @@ struct SettingsView: View {
                     LabeledContent("网络", value: "无")
                 }
 
-                Section("账单提醒") {
-                    Toggle("账单总结提醒", isOn: $remindersEnabled)
+                Section("收支提醒") {
+                    Toggle("收支总结提醒", isOn: $remindersEnabled)
                         .onChange(of: remindersEnabled) { _, enabled in
                             if enabled {
                                 Task {

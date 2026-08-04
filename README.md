@@ -1,6 +1,6 @@
 # OpenLedger
 
-本地优先的智能记账 App：一张支付截图，自动完成记账。
+本地优先的智能收支统计 App：一张支付截图，自动完成记账，快速掌握收支。
 
 [![CI](https://github.com/lyang8222/OpenLedger/actions/workflows/ci.yml/badge.svg)](https://github.com/lyang8222/OpenLedger/actions/workflows/ci.yml)
 

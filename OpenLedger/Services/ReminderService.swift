@@ -65,7 +65,7 @@ enum ReminderService {
         for period in SummaryPeriod.allCases where isPeriodEnabled(period) {
             for trigger in triggers(for: period) {
                 let content = UNMutableNotificationContent()
-                content.title = "\(period.label)账单总结"
+                content.title = "\(period.label)收支总结"
                 content.body = builder.summary(
                     records: coreRecords,
                     period: period,

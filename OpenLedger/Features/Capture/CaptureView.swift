@@ -86,7 +86,7 @@ struct CaptureView: View {
                             .font(.title3.weight(.semibold))
                             .foregroundStyle(.primary)
 
-                        Text("从相册选择或拍摄微信、支付宝等支付截图，识别与存储全程在本机完成")
+                        Text("从相册选择或拍摄微信、支付宝等支付截图，自动统计收支，数据全程留在本机")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)

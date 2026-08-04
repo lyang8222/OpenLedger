@@ -139,7 +139,7 @@ struct ScreenshotPromptBanner: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("检测到你刚截了支付截图")
                     .font(.subheadline.weight(.semibold))
-                Text("要导入记账吗？截图仅在本机识别")
+                Text("要导入并统计收支吗？截图仅在本机识别")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

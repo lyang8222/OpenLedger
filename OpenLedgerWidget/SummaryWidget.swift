@@ -49,8 +49,8 @@ struct SummaryWidget: Widget {
         StaticConfiguration(kind: "SummaryWidget", provider: SummaryProvider()) { entry in
             SummaryWidgetView(entry: entry)
         }
-        .configurationDisplayName("账单总结")
-        .description("查看今日与本月支出")
+        .configurationDisplayName("收支统计")
+        .description("快速查看今日与本月支出")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
