@@ -47,7 +47,8 @@ struct LedgerView: View {
                                             months: 6
                                         ),
                                         categorySummaries: ChartDataBuilder().categorySummaries(
-                                            records: coreRecords
+                                            records: coreRecords,
+                                            userRules: CategoryRuleStore.load()
                                         ),
                                         chartType: chartType
                                     )
@@ -109,7 +110,8 @@ struct LedgerView: View {
         let category = record.category ?? CategoryClassifier().classify(
             merchant: record.merchant,
             itemDescription: nil,
-            amount: record.amount
+            amount: record.amount,
+            userRules: CategoryRuleStore.load()
         ).label
 
         return HStack(spacing: 12) {

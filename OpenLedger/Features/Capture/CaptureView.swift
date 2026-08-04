@@ -322,7 +322,11 @@ struct CaptureView: View {
                 showReview = false
                 return
             }
-            let model = try PaymentRecordModel.make(from: updated, crypto: crypto)
+            let model = try PaymentRecordModel.make(
+                from: updated,
+                crypto: crypto,
+                userRules: CategoryRuleStore.load()
+            )
             modelContext.insert(model)
             try modelContext.save()
             let amount = model.amount

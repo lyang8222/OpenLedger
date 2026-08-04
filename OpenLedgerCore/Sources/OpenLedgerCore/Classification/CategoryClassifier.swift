@@ -1,6 +1,6 @@
 import Foundation
 
-public enum ExpenseCategory: String, CaseIterable, Sendable {
+public enum ExpenseCategory: String, CaseIterable, Codable, Sendable {
     case dining
     case transport
     case shopping
@@ -28,6 +28,18 @@ public enum ExpenseCategory: String, CaseIterable, Sendable {
     }
 }
 
+public struct CategoryRule: Codable, Equatable, Sendable, Identifiable {
+    public let id: UUID
+    public let keyword: String
+    public let category: ExpenseCategory
+
+    public init(id: UUID = UUID(), keyword: String, category: ExpenseCategory) {
+        self.id = id
+        self.keyword = keyword
+        self.category = category
+    }
+}
+
 /// 基于商户/商品关键词的本地自动分类。
 public struct CategoryClassifier: Sendable {
     public init() {}
@@ -46,7 +58,8 @@ public struct CategoryClassifier: Sendable {
     public func classify(
         merchant: String?,
         itemDescription: String?,
-        amount: Decimal
+        amount: Decimal,
+        userRules: [CategoryRule] = []
     ) -> ExpenseCategory {
         if amount > 0 {
             return .income
@@ -55,6 +68,11 @@ public struct CategoryClassifier: Sendable {
         let text = [merchant, itemDescription]
             .compactMap { $0 }
             .joined(separator: " ")
+
+        // 用户自定义规则优先
+        for rule in userRules where text.contains(rule.keyword) {
+            return rule.category
+        }
 
         for (category, keywords) in Self.rules {
             if keywords.contains(where: { text.contains($0) }) {

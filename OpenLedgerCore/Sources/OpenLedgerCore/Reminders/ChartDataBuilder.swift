@@ -73,7 +73,8 @@ public struct ChartDataBuilder: Sendable {
     public func categorySummaries(
         records: [PaymentRecord],
         now: Date = Date(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        userRules: [CategoryRule] = []
     ) -> [CategorySummary] {
         let month = calendar.date(from: calendar.dateComponents([.year, .month], from: now))
             ?? calendar.startOfDay(for: now)
@@ -92,7 +93,8 @@ public struct ChartDataBuilder: Sendable {
             let category = classifier.classify(
                 merchant: record.merchant,
                 itemDescription: nil,
-                amount: record.amount
+                amount: record.amount,
+                userRules: userRules
             )
             let current = map[category] ?? (.zero, 0)
             map[category] = (current.amount + abs(record.amount), current.count + 1)

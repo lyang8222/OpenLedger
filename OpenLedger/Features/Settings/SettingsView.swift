@@ -26,6 +26,8 @@ struct SettingsView: View {
     @State private var message: String?
     @State private var showReconciliation = false
     @State private var showSubscriptions = false
+    @State private var showRuleEditor = false
+    @State private var categoryRules = CategoryRuleStore.load()
 
     let appLock: AppLockService
 
@@ -98,6 +100,31 @@ struct SettingsView: View {
                     Text("收支图表")
                 } footer: {
                     Text("收支页顶部图表的显示样式")
+                }
+
+                Section("分类规则") {
+                    if categoryRules.isEmpty {
+                        Text("还没有自定义规则。添加后，规则关键词优先于内置分类。")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        ForEach(categoryRules) { rule in
+                            HStack {
+                                Text(rule.keyword)
+                                Spacer()
+                                Text(rule.category.label)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .onDelete { offsets in
+                            categoryRules.remove(atOffsets: offsets)
+                            CategoryRuleStore.save(categoryRules)
+                        }
+                    }
+
+                    Button("添加规则") {
+                        showRuleEditor = true
+                    }
                 }
 
                     Section("本地存储") {
@@ -181,6 +208,12 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showSubscriptions) {
                 SubscriptionListView()
+            }
+            .sheet(isPresented: $showRuleEditor) {
+                CategoryRuleEditorView { rule in
+                    categoryRules.append(rule)
+                    CategoryRuleStore.save(categoryRules)
+                }
             }
             .alert(
                 "输入备份口令",
@@ -413,6 +446,49 @@ struct SettingsView: View {
             createdAt: record.createdAt,
             updatedAt: record.updatedAt
         )
+    }
+}
+
+private struct CategoryRuleEditorView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let onAdd: (CategoryRule) -> Void
+
+    @State private var keyword = ""
+    @State private var category: ExpenseCategory = .other
+
+    private var trimmedKeyword: String {
+        keyword.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("规则") {
+                    TextField("商户关键词（如：全家）", text: $keyword)
+                    Picker("分类", selection: $category) {
+                        ForEach(ExpenseCategory.allCases, id: \.self) { item in
+                            Text(item.label).tag(item)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("添加分类规则")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("取消") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("保存") {
+                        guard !trimmedKeyword.isEmpty else { return }
+                        onAdd(CategoryRule(keyword: trimmedKeyword, category: category))
+                        dismiss()
+                    }
+                    .disabled(trimmedKeyword.isEmpty)
+                }
+            }
+        }
     }
 }
 

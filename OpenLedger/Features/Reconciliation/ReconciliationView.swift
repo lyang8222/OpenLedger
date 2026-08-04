@@ -289,7 +289,12 @@ struct ReconciliationView: View {
                     skipped += 1
                     continue
                 }
-                let model = try Self.model(from: entry, key: key, crypto: crypto)
+                let model = try Self.model(
+                    from: entry,
+                    key: key,
+                    crypto: crypto,
+                    userRules: CategoryRuleStore.load()
+                )
                 modelContext.insert(model)
                 newModels.append(model)
                 inserted += 1
@@ -338,7 +343,8 @@ struct ReconciliationView: View {
     private static func model(
         from entry: BillEntry,
         key: SymmetricKey,
-        crypto: CryptoService
+        crypto: CryptoService,
+        userRules: [CategoryRule] = []
     ) throws -> PaymentRecordModel {
         let platform: PaymentRecord.Platform
         switch entry.platform {
@@ -364,7 +370,8 @@ struct ReconciliationView: View {
             category: entry.category ?? CategoryClassifier().classify(
                 merchant: entry.counterparty,
                 itemDescription: entry.itemDescription,
-                amount: entry.amount
+                amount: entry.amount,
+                userRules: userRules
             ).label,
             paidAt: entry.paidAt,
             platform: platform,

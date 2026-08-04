@@ -823,6 +823,32 @@ func testCategorySummaries() {
 }
 
 @MainActor
+func testCategoryRules() {
+    let classifier = CategoryClassifier()
+    let rule = CategoryRule(keyword: "咖啡", category: .shopping)
+    expectEqual(
+        classifier.classify(
+            merchant: "星巴克咖啡",
+            itemDescription: nil,
+            amount: Decimal(string: "-30.00")!,
+            userRules: [rule]
+        ),
+        .shopping,
+        "自定义规则：覆盖内置分类"
+    )
+    expectEqual(
+        classifier.classify(
+            merchant: "汉堡王",
+            itemDescription: nil,
+            amount: Decimal(string: "-30.00")!,
+            userRules: [rule]
+        ),
+        .dining,
+        "自定义规则：不影响其他商户"
+    )
+}
+
+@MainActor
 func validateRealBills(csvPath: String, xlsxPath: String, zipPath: String?) {
     print("\n===== 真实账单验证 =====")
     do {
@@ -891,6 +917,7 @@ testChartDataBuilder()
 testSubscriptionDetector()
 testCategoryClassifier()
 testCategorySummaries()
+testCategoryRules()
 
 if CommandLine.arguments.count >= 3 {
     validateRealBills(

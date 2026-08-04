@@ -60,7 +60,11 @@ final class PaymentRecordModel {
     }
 
     /// 从识别草稿创建记录：交易单号/OCR 原文加密落库，单号另存哈希用于去重。
-    static func make(from draft: PaymentDraft, crypto: CryptoService) throws -> PaymentRecordModel {
+    static func make(
+        from draft: PaymentDraft,
+        crypto: CryptoService,
+        userRules: [CategoryRule] = []
+    ) throws -> PaymentRecordModel {
         let key = try crypto.masterKey()
 
         let transactionId = draft.transactionId
@@ -78,7 +82,8 @@ final class PaymentRecordModel {
             category: CategoryClassifier().classify(
                 merchant: draft.merchant,
                 itemDescription: nil,
-                amount: draft.amount ?? .zero
+                amount: draft.amount ?? .zero,
+                userRules: userRules
             ).label,
             paidAt: draft.paidAt,
             platform: draft.platform,

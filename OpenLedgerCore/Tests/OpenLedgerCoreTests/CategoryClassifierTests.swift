@@ -34,4 +34,26 @@ final class CategoryClassifierTests: XCTestCase {
             .other
         )
     }
+
+    func testUserRulesOverrideBuiltIn() {
+        let rule = CategoryRule(keyword: "咖啡", category: .shopping)
+        XCTAssertEqual(
+            classifier.classify(
+                merchant: "星巴克咖啡",
+                itemDescription: nil,
+                amount: Decimal(string: "-30.00")!,
+                userRules: [rule]
+            ),
+            .shopping
+        )
+        XCTAssertEqual(
+            classifier.classify(
+                merchant: "汉堡王",
+                itemDescription: nil,
+                amount: Decimal(string: "-30.00")!,
+                userRules: [rule]
+            ),
+            .dining
+        )
+    }
 }

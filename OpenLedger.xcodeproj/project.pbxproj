@@ -30,6 +30,7 @@
 		00000000000000000000021F /* ManualEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000011F /* ManualEntryView.swift */; };
 		000000000000000000000220 /* SubscriptionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000120 /* SubscriptionListView.swift */; };
 		000000000000000000000221 /* RedactedShareCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000121 /* RedactedShareCardView.swift */; };
+		000000000000000000000222 /* CategoryRuleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000122 /* CategoryRuleStore.swift */; };
 		000000000000000000000215 /* OpenLedgerWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000115 /* OpenLedgerWidgetBundle.swift */; };
 		000000000000000000000216 /* SummaryWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000116 /* SummaryWidget.swift */; };
 		000000000000000000000217 /* WidgetSummaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000119 /* WidgetSummaryStore.swift */; };
@@ -97,6 +98,7 @@
 		00000000000000000000011F /* ManualEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualEntryView.swift; sourceTree = "<group>"; };
 		000000000000000000000120 /* SubscriptionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionListView.swift; sourceTree = "<group>"; };
 		000000000000000000000121 /* RedactedShareCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedactedShareCardView.swift; sourceTree = "<group>"; };
+		000000000000000000000122 /* CategoryRuleStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryRuleStore.swift; sourceTree = "<group>"; };
 		000000000000000000000115 /* OpenLedgerWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLedgerWidgetBundle.swift; sourceTree = "<group>"; };
 		000000000000000000000116 /* SummaryWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryWidget.swift; sourceTree = "<group>"; };
 		000000000000000000000117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -277,6 +279,7 @@
 				000000000000000000000113 /* ReminderService.swift */,
 				00000000000000000000011C /* NotificationDelegate.swift */,
 				00000000000000000000011E /* SubscriptionService.swift */,
+				000000000000000000000122 /* CategoryRuleStore.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -468,6 +471,7 @@
 				00000000000000000000021F /* ManualEntryView.swift in Sources */,
 				000000000000000000000220 /* SubscriptionListView.swift in Sources */,
 				000000000000000000000221 /* RedactedShareCardView.swift in Sources */,
+				000000000000000000000222 /* CategoryRuleStore.swift in Sources */,
 				000000000000000000000218 /* WidgetSummaryStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
